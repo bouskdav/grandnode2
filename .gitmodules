@@ -1,0 +1,18 @@
+[submodule "src/Plugins/Widgets.MembersOnly"]
+	path = src/Plugins/Widgets.MembersOnly
+	url = https://github.com/bouskdav/grandnode2_plugin_members_only_access.git
+[submodule "src/Plugins/Misc.CzechInvoiceGenerator"]
+	path = src/Plugins/Misc.CzechInvoiceGenerator
+	url = https://github.com/bouskdav/grandnode2_plugin_czech_invoices.git
+[submodule "src/Plugins/Payments.ComgateCZ"]
+	path = src/Plugins/Payments.ComgateCZ
+	url = https://github.com/bouskdav/grandnode2_plugin_comgate_cz_payments.git
+[submodule "src/Plugins/Payments.BankTransferWithQr"]
+	path = src/Plugins/Payments.BankTransferWithQr
+	url = https://github.com/bouskdav/grandnode2_plugin_qr_bank_transfer.git
+[submodule "src/Plugins/Misc.WorkflowIntegration"]
+	path = src/Plugins/Misc.WorkflowIntegration
+	url = https://github.com/bouskdav/grandnode2_plugin_workflow_integration.git
+[submodule "src/Web/Grand.Web/Themes/Nekton"]
+	path = src/Web/Grand.Web/Themes/Nekton
+	url = https://github.com/bouskdav/grandnode2_theme_nekton.git
