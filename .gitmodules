@@ -16,3 +16,6 @@
 [submodule "src/Web/Grand.Web/Themes/Nekton"]
 	path = src/Web/Grand.Web/Themes/Nekton
 	url = https://github.com/bouskdav/grandnode2_theme_nekton.git
+[submodule "src/Plugins/Shipping.DPD"]
+	path = src/Plugins/Shipping.DPD
+	url = https://github.com/bouskdav/grandnode2_plugin_dpd.git
