@@ -6,14 +6,17 @@ using Grand.Business.Core.Interfaces.Customers;
 using Grand.Business.Core.Interfaces.Messages;
 using Grand.Business.Core.Interfaces.Storage;
 using Grand.Domain.Common;
+using Grand.Domain.Customers;
 using Grand.Domain.Localization;
 using Grand.Domain.Seo;
 using Grand.Domain.Vendors;
 using Grand.Infrastructure;
 using Grand.SharedKernel.Extensions;
 using Grand.Web.Commands.Models.Vendors;
+using Grand.Web.Common.Controllers;
 using Grand.Web.Common.Extensions;
 using Grand.Web.Common.Filters;
+using Grand.Web.Common.Security.Authorization;
 using Grand.Web.Common.Security.Captcha;
 using Grand.Web.Extensions;
 using Grand.Web.Features.Models.Common;
@@ -94,14 +97,12 @@ namespace Grand.Web.Controllers
         #endregion
 
         #region Methods
-
+        [HttpGet]
+        [CustomerGroupAuthorize(SystemCustomerGroupNames.Registered)]
         public virtual async Task<IActionResult> ApplyVendor()
         {
             if (!_vendorSettings.AllowCustomersToApplyForVendorAccount)
                 return RedirectToRoute("HomePage");
-
-            if (!await _groupService.IsRegistered(_workContext.CurrentCustomer))
-                return Challenge();
 
             var model = new ApplyVendorModel();
             if (!string.IsNullOrEmpty(_workContext.CurrentCustomer.VendorId))
@@ -115,6 +116,7 @@ namespace Grand.Web.Controllers
             model.DisplayCaptcha = _captchaSettings.Enabled && _captchaSettings.ShowOnApplyVendorPage;
             model.Email = _workContext.CurrentCustomer.Email;
             model.TermsOfServiceEnabled = _vendorSettings.TermsOfServiceEnabled;
+            model.AllowToUploadFile = _vendorSettings.AllowToUploadFile;
             model.TermsOfServicePopup = _commonSettings.PopupForTermsOfServiceLinks;
             var countries = await _countryService.GetAllCountries(_workContext.WorkingLanguage.Id, _workContext.CurrentStore.Id);
             model.Address = await _mediator.Send(new GetVendorAddress {
@@ -131,26 +133,17 @@ namespace Grand.Web.Controllers
 
         [HttpPost, ActionName("ApplyVendor")]
         [AutoValidateAntiforgeryToken]
-        [ValidateCaptcha]
         [DenySystemAccount]
-        public virtual async Task<IActionResult> ApplyVendorSubmit(ApplyVendorModel model, bool captchaValid, IFormFile uploadedFile)
+        [CustomerGroupAuthorize(SystemCustomerGroupNames.Registered)]
+        public virtual async Task<IActionResult> ApplyVendorSubmit(ApplyVendorModel model, IFormFile uploadedFile)
         {
             if (!_vendorSettings.AllowCustomersToApplyForVendorAccount)
                 return RedirectToRoute("HomePage");
 
-            if (!await _groupService.IsRegistered(_workContext.CurrentCustomer))
-                return Challenge();
-
-            //validate CAPTCHA
-            if (_captchaSettings.Enabled && _captchaSettings.ShowOnApplyVendorPage && !captchaValid)
-            {
-                ModelState.AddModelError("", _captchaSettings.GetWrongCaptchaMessage(_translationService));
-            }
-
             var contentType = string.Empty;
             byte[] vendorPictureBinary = null;
 
-            if (uploadedFile != null && !string.IsNullOrEmpty(uploadedFile.FileName))
+            if (_vendorSettings.AllowToUploadFile && uploadedFile != null && !string.IsNullOrEmpty(uploadedFile.FileName))
             {
                 try
                 {
@@ -219,7 +212,7 @@ namespace Grand.Web.Controllers
             model.DisplayCaptcha = _captchaSettings.Enabled && _captchaSettings.ShowOnApplyVendorPage;
             model.TermsOfServiceEnabled = _vendorSettings.TermsOfServiceEnabled;
             model.TermsOfServicePopup = _commonSettings.PopupForTermsOfServiceLinks;
-
+            model.AllowToUploadFile = _vendorSettings.AllowToUploadFile;
             var countries = await _countryService.GetAllCountries(_workContext.WorkingLanguage.Id, _workContext.CurrentStore.Id);
             model.Address = await _mediator.Send(new GetVendorAddress {
                 Language = _workContext.WorkingLanguage,
@@ -233,11 +226,10 @@ namespace Grand.Web.Controllers
             return View(model);
         }
 
+        [HttpGet]
+        [CustomerGroupAuthorize(SystemCustomerGroupNames.Registered)]
         public virtual async Task<IActionResult> Info()
         {
-            if (!await _groupService.IsRegistered(_workContext.CurrentCustomer))
-                return Challenge();
-
             if (_workContext.CurrentVendor == null || !_vendorSettings.AllowVendorsToEditInfo)
                 return RedirectToRoute("CustomerInfo");
 
@@ -247,6 +239,7 @@ namespace Grand.Web.Controllers
             model.Email = vendor.Email;
             model.Name = vendor.Name;
             model.UserFields = vendor.UserFields;
+            model.AllowToUploadFile = _vendorSettings.AllowToUploadFile;
             model.PictureUrl = await _pictureService.GetPictureUrl(vendor.PictureId);
             var countries = await _countryService.GetAllCountries(_workContext.WorkingLanguage.Id, _workContext.CurrentStore.Id);
             model.Address = await _mediator.Send(new GetVendorAddress {
@@ -261,18 +254,16 @@ namespace Grand.Web.Controllers
 
         [HttpPost]
         [AutoValidateAntiforgeryToken]
+        [CustomerGroupAuthorize(SystemCustomerGroupNames.Registered)]
         public virtual async Task<IActionResult> Info(VendorInfoModel model, IFormFile uploadedFile)
         {
-            if (!await _groupService.IsRegistered(_workContext.CurrentCustomer))
-                return Challenge();
-
             if (_workContext.CurrentVendor == null || !_vendorSettings.AllowVendorsToEditInfo)
                 return RedirectToRoute("CustomerInfo");
 
             var contentType = string.Empty;
             byte[] vendorPictureBinary = null;
 
-            if (uploadedFile != null && !string.IsNullOrEmpty(uploadedFile.FileName))
+            if (_vendorSettings.AllowToUploadFile && uploadedFile != null && !string.IsNullOrEmpty(uploadedFile.FileName))
             {
                 try
                 {
@@ -296,7 +287,7 @@ namespace Grand.Web.Controllers
             if (prevPicture == null)
                 vendor.PictureId = "";
 
-            if (ModelState is { IsValid: true, ErrorCount: 0 })
+            if (ModelState.IsValid)
             {
                 var description = FormatText.ConvertText(model.Description);
 
@@ -309,10 +300,10 @@ namespace Grand.Web.Controllers
                     var picture = await _pictureService.InsertPicture(vendorPictureBinary, contentType, null, reference: Reference.Vendor, objectId: vendor.Id);
                     if (picture != null)
                         vendor.PictureId = picture.Id;
+                    
+                    if (prevPicture != null)
+                        await _pictureService.DeletePicture(prevPicture);
                 }
-                if (prevPicture != null)
-                    await _pictureService.DeletePicture(prevPicture);
-
                 //update picture seo file name
                 await UpdatePictureSeoNames(vendor);
                 model.Address.ToEntity(vendor.Address);
@@ -338,11 +329,9 @@ namespace Grand.Web.Controllers
         }
 
         [HttpGet]
+        [CustomerGroupAuthorize(SystemCustomerGroupNames.Registered)]
         public virtual async Task<IActionResult> RemovePicture()
         {
-            if (!await _groupService.IsRegistered(_workContext.CurrentCustomer))
-                return Challenge();
-
             if (_workContext.CurrentVendor == null || !_vendorSettings.AllowVendorsToEditInfo)
                 return RedirectToRoute("CustomerInfo");
 
@@ -363,11 +352,10 @@ namespace Grand.Web.Controllers
         }
 
 
-        [HttpPost, ActionName("ContactVendor")]
+        [HttpPost]
         [AutoValidateAntiforgeryToken]
-        [ValidateCaptcha]
         [DenySystemAccount]
-        public virtual async Task<IActionResult> ContactVendor(ContactVendorModel model, bool captchaValid)
+        public virtual async Task<IActionResult> ContactVendor(ContactVendorModel model)
         {
             if (!_vendorSettings.AllowCustomersToContactVendors)
                 return Content("");
@@ -375,14 +363,6 @@ namespace Grand.Web.Controllers
             var vendor = await _vendorService.GetVendorById(model.VendorId);
             if (vendor is not { Active: true } || vendor.Deleted)
                 return Content("");
-
-            //validate CAPTCHA
-            if (_captchaSettings.Enabled && _captchaSettings.ShowOnContactUsPage && !captchaValid)
-            {
-                ModelState.AddModelError("", _captchaSettings.GetWrongCaptchaMessage(_translationService));
-            }
-
-            model.VendorName = vendor.GetTranslation(x => x.Name, _workContext.WorkingLanguage.Id);
 
             if (ModelState.IsValid)
             {

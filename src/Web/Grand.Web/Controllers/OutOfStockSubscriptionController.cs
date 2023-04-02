@@ -6,6 +6,7 @@ using Grand.Domain.Catalog;
 using Grand.Domain.Customers;
 using Grand.Domain.Orders;
 using Grand.Infrastructure;
+using Grand.Web.Common.Controllers;
 using Grand.Web.Common.Filters;
 using Grand.Web.Features.Models.ShoppingCart;
 using Grand.Web.Models.Catalog;
@@ -60,7 +61,7 @@ namespace Grand.Web.Controllers
         #endregion
 
         #region Methods
-
+        [HttpGet]
         // Product details page > out of stock subscribe button
         public virtual async Task<IActionResult> SubscribeButton(string productId, string warehouseId)
         {
@@ -70,7 +71,7 @@ namespace Grand.Web.Controllers
 
             var customer = _workContext.CurrentCustomer;
             if (!await _groupService.IsRegistered(customer))
-                return Content(_translationService.GetResource("OutOfStockSubscriptions.NotifyMeWhenAvailable"));
+                return Content(_translationService.GetResource("OutOfStockSubscriptions.OnlyRegistered"));
 
             if (product.ManageInventoryMethodId != ManageInventoryMethod.ManageStock)
                 return Content(_translationService.GetResource("OutOfStockSubscriptions.NotifyMeWhenAvailable"));
@@ -107,8 +108,8 @@ namespace Grand.Web.Controllers
             if (!await _groupService.IsRegistered(customer))
                 return Json(new {
                     subscribe = false,
-                    buttontext = _translationService.GetResource("OutOfStockSubscriptions.NotifyMeWhenAvailable"),
-                    resource = _translationService.GetResource("OutOfStockSubscriptions.OnlyRegistered")
+                    buttontext = _translationService.GetResource("OutOfStockSubscriptions.OnlyRegistered"),
+                    resource = _translationService.GetResource("OutOfStockSubscriptions.OnlyRegisteredText")
                 });
 
             if (product.ManageInventoryMethodId == ManageInventoryMethod.ManageStock &&
@@ -194,6 +195,7 @@ namespace Grand.Web.Controllers
 
 
         // My account / Out of stock subscriptions
+        [HttpGet]
         public virtual async Task<IActionResult> CustomerSubscriptions(int? pageNumber)
         {
             if (_customerSettings.HideOutOfStockSubscriptionsTab)

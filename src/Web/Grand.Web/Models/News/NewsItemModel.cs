@@ -1,5 +1,4 @@
 ﻿using Grand.Infrastructure.Models;
-using Grand.Web.Models.Common;
 using Grand.Web.Models.Media;
 
 namespace Grand.Web.Models.News
@@ -26,6 +25,6 @@ namespace Grand.Web.Models.News
         public DateTime CreatedOn { get; set; }
         public IList<NewsCommentModel> Comments { get; set; }
         public AddNewsCommentModel AddNewComment { get; set; }
-        public ICaptchaValidModel Captcha { get; set; } = new CaptchaModel();
+        
     }
 }

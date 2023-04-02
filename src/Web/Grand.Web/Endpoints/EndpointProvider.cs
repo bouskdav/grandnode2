@@ -229,6 +229,11 @@ namespace Grand.Web.Endpoints
                             pattern + "producttag/all/",
                             new { controller = "Catalog", action = "ProductTagsAll" });
 
+            //categories
+            endpointRouteBuilder.MapControllerRoute("CategoryList",
+                pattern + "category/all/",
+                new { controller = "Catalog", action = "CategoryAll" });
+            
             //brands
             endpointRouteBuilder.MapControllerRoute("BrandList",
                             pattern + "brand/all/",
@@ -296,7 +301,7 @@ namespace Grand.Web.Endpoints
 
             //product email a friend
             endpointRouteBuilder.MapControllerRoute("ProductEmailAFriend",
-                            pattern + "productemailafriend/{productId?}",
+                            pattern + "productemailafriend",
                             new { controller = "Product", action = "ProductEmailAFriend" });
             
             //product ask question on product page
@@ -306,7 +311,7 @@ namespace Grand.Web.Endpoints
 
             //reviews
             endpointRouteBuilder.MapControllerRoute("ProductReviews",
-                            pattern + "productreviews/{productId}",
+                            pattern + "productreviews",
                             new { controller = "Product", action = "ProductReviews" });
 
             //set review helpfulness (AJAX link)
@@ -326,7 +331,7 @@ namespace Grand.Web.Endpoints
             //contact us
             endpointRouteBuilder.MapControllerRoute("ContactUs",
                             pattern + "contactus",
-                            new { controller = "Contact", action = "ContactUs" });
+                            new { controller = "Contact", action = "Index" });
 
             //change currency 
             endpointRouteBuilder.MapControllerRoute("ChangeCurrency",

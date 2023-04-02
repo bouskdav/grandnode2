@@ -10038,6 +10038,9 @@
 	<Resource Name="Admin.Settings.Catalog.LimitOfFeaturedProducts" Area="Admin">
 		<Value>Limit Of Featured Products</Value>
 	</Resource>
+	<Resource Name="Admin.Settings.Catalog.MaxCatalogPageSize" Area="Admin">
+		<Value>Page size for the all page of brand/collection/vendor/category</Value>
+	</Resource>
 	<Resource Name="Admin.Settings.Catalog.NewProductsEnabled" Area="Admin">
 		<Value>'New products' page enabled</Value>
 	</Resource>
@@ -11399,6 +11402,9 @@
 	<Resource Name="Admin.Settings.Vendor.AllowCustomersToContactVendors" Area="Admin">
 		<Value>Allow customers to contact vendors</Value>
 	</Resource>
+	<Resource Name="Admin.Settings.Vendor.AllowToUploadFile" Area="Admin">
+		<Value>Allow vendor to upload picture file</Value>
+	</Resource>
 	<Resource Name="Admin.Settings.Vendor.AllowSearchByVendor" Area="Admin">
 		<Value>Allow search by vendor in store advanced search</Value>
 	</Resource>
@@ -11921,6 +11927,12 @@
 	<Resource Name="Admin.System.SystemInfo.ContentRootPath" Area="Admin">
 		<Value>Absolute path to the directory that contains the application content files</Value>
 	</Resource>
+	<Resource Name="Admin.System.SystemInfo.GitBranch" Area="Front">
+		<Value>Git branch</Value>
+	</Resource>
+	<Resource Name="Admin.System.SystemInfo.GitCommit" Area="Front">
+		<Value>Git commit</Value>
+	</Resource>	
 	<Resource Name="Admin.System.SystemInfo.GrandVersion" Area="Admin">
 		<Value>grandnode version</Value>
 	</Resource>
@@ -12584,6 +12596,9 @@
 	<Resource Name="Categories.Breadcrumb.Top" Area="Front">
 		<Value>Home</Value>
 	</Resource>
+	<Resource Name="Categories.List" Area="Front">
+		<Value>Categories List</Value>
+	</Resource>
 	<Resource Name="Categories.TotalProducts" Area="Front">
 		<Value>({0})</Value>
 	</Resource>
@@ -12943,6 +12958,9 @@
 	</Resource>
 	<Resource Name="ContactUs.EmailSubject" Area="Front">
 		<Value>{0}. Contact us</Value>
+	</Resource>
+	<Resource Name="ContactUs.Subject.Hint" Area="Front">
+		<Value>Enter your subject</Value>
 	</Resource>
 	<Resource Name="ContactUs.Enquiry" Area="Front">
 		<Value>Enquiry</Value>
@@ -14259,6 +14277,9 @@
 		<Value>Notify me when available</Value>
 	</Resource>
 	<Resource Name="OutOfStockSubscriptions.OnlyRegistered" Area="Front">
+		<Value>Only registered customers can get notify</Value>
+	</Resource>
+	<Resource Name="OutOfStockSubscriptions.OnlyRegisteredText" Area="Front">
 		<Value>Only registered customers can use this feature</Value>
 	</Resource>
 	<Resource Name="OutOfStockSubscriptions.PleaseWait" Area="Front">
@@ -15799,6 +15820,9 @@
 	</Resource>
 	<Resource Name="Title.Brands" Area="Front">
 		<Value>Brands</Value>
+	</Resource>
+	<Resource Name="Title.Categories" Area="Front">
+		<Value>Categories</Value>
 	</Resource>
 	<Resource Name="Title.Checkout" Area="Front">
 		<Value>Checkout</Value>

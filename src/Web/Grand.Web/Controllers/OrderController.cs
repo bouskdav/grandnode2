@@ -10,6 +10,8 @@ using Grand.Domain.Payments;
 using Grand.Domain.Shipping;
 using Grand.Infrastructure;
 using Grand.Web.Commands.Models.Orders;
+using Grand.SharedKernel.Attributes;
+using Grand.Web.Common.Controllers;
 using Grand.Web.Common.Filters;
 using Grand.Web.Common.Page;
 using Grand.Web.Events;
@@ -18,6 +20,8 @@ using Grand.Web.Features.Models.Orders;
 using Grand.Web.Models.Orders;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Grand.Web.Common.Security.Authorization;
+using Grand.Domain.Customers;
 
 namespace Grand.Web.Controllers
 {
@@ -79,11 +83,10 @@ namespace Grand.Web.Controllers
         #region Methods
 
         //My account / Orders
+        [HttpGet]
+        [CustomerGroupAuthorize(SystemCustomerGroupNames.Registered)]
         public virtual async Task<IActionResult> CustomerOrders(OrderPagingModel command)
         {
-            if (!await _groupService.IsRegistered(_workContext.CurrentCustomer))
-                return Challenge();
-
             var model = await _mediator.Send(new GetCustomerOrderList {
                 Customer = _workContext.CurrentCustomer,
                 Language = _workContext.WorkingLanguage,
@@ -94,6 +97,7 @@ namespace Grand.Web.Controllers
         }
 
         //My account / Order details page
+        [HttpGet]
         public virtual async Task<IActionResult> Details(string orderId)
         {
             var order = await _orderService.GetOrderById(orderId);
@@ -106,6 +110,8 @@ namespace Grand.Web.Controllers
         }
 
         //My account / Order details page / Print
+        [IgnoreApi]
+        [HttpGet]
         public virtual async Task<IActionResult> PrintOrderDetails(string orderId)
         {
             var order = await _orderService.GetOrderById(orderId);
@@ -119,6 +125,7 @@ namespace Grand.Web.Controllers
         }
 
         //My account / Order details page / Cancel Unpaid Order
+        [HttpGet]
         public virtual async Task<IActionResult> CancelOrder(string orderId)
         {
             var order = await _orderService.GetOrderById(orderId);
@@ -136,6 +143,7 @@ namespace Grand.Web.Controllers
         }
 
         //My account / Order details page / PDF invoice
+        [HttpGet]
         public virtual async Task<IActionResult> GetPdfInvoice(string orderId, [FromServices] IPdfService pdfService)
         {
             var order = await _orderService.GetOrderById(orderId);
@@ -179,6 +187,7 @@ namespace Grand.Web.Controllers
         }
 
         //My account / Order details page / re-order
+        [HttpGet]
         public virtual async Task<IActionResult> ReOrder(string orderId)
         {
             var order = await _orderService.GetOrderById(orderId);
@@ -220,6 +229,7 @@ namespace Grand.Web.Controllers
         }
 
         //My account / Order details page / Shipment details page
+        [HttpGet]
         public virtual async Task<IActionResult> ShipmentDetails(string shipmentId, [FromServices] IShipmentService shipmentService)
         {
             var shipment = await shipmentService.GetShipmentById(shipmentId);
@@ -241,11 +251,10 @@ namespace Grand.Web.Controllers
         }
 
         //My account / Loyalty points
+        [HttpGet]
+        [CustomerGroupAuthorize(SystemCustomerGroupNames.Registered)]
         public virtual async Task<IActionResult> CustomerLoyaltyPoints([FromServices] LoyaltyPointsSettings loyaltyPointsSettings)
         {
-            if (!await _groupService.IsRegistered(_workContext.CurrentCustomer))
-                return Challenge();
-
             if (!loyaltyPointsSettings.Enabled)
                 return RedirectToRoute("CustomerInfo");
 
