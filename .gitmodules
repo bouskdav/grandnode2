@@ -19,3 +19,6 @@
 [submodule "src/Plugins/Shipping.DPD"]
 	path = src/Plugins/Shipping.DPD
 	url = https://github.com/bouskdav/grandnode2_plugin_dpd.git
+[submodule "src/Plugins/Shipping.Packeta"]
+	path = src/Plugins/Shipping.Packeta
+	url = https://github.com/bouskdav/grandnode2_plugin_packeta.git
