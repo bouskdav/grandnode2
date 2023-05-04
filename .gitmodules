@@ -22,3 +22,6 @@
 [submodule "src/Plugins/Shipping.Packeta"]
 	path = src/Plugins/Shipping.Packeta
 	url = https://github.com/bouskdav/grandnode2_plugin_packeta.git
+[submodule "src/Plugins/Shipping.CPost"]
+	path = src/Plugins/Shipping.CPost
+	url = https://github.com/bouskdav/grandnode2_plugin_cpost.git
