@@ -25,3 +25,9 @@
 [submodule "src/Plugins/Shipping.CPost"]
 	path = src/Plugins/Shipping.CPost
 	url = https://github.com/bouskdav/grandnode2_plugin_cpost.git
+[submodule "src/Web/Grand.Web/Themes/Holy"]
+	path = src/Web/Grand.Web/Themes/Holy
+	url = https://github.com/bouskdav/grandnode2_theme_holy.git
+[submodule "src/Web/Grand.Web/Themes/Cosmoware"]
+	path = src/Web/Grand.Web/Themes/Cosmoware
+	url = https://github.com/bouskdav/grandnode2_theme_cosmoware.git
