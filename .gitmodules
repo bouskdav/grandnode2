@@ -31,3 +31,6 @@
 [submodule "src/Web/Grand.Web/Themes/Cosmoware"]
 	path = src/Web/Grand.Web/Themes/Cosmoware
 	url = https://github.com/bouskdav/grandnode2_theme_cosmoware.git
+[submodule "src/Plugins/DiscountRules.Pickup"]
+	path = src/Plugins/DiscountRules.Pickup
+	url = https://github.com/bouskdav/grandnode2_plugin_pickup_discount.git

@@ -1,5 +1,6 @@
 ﻿using DiscountRules.Provider;
 using Grand.Business.Core.Interfaces.Catalog.Discounts;
+using System.Reflection;
 
 namespace DiscountRules.Standard
 {
@@ -10,19 +11,22 @@ namespace DiscountRules.Standard
         private readonly HasAllProductsDiscountRule _hasAllProductsDiscountRequirementRule;
         private readonly HasOneProductDiscountRule _hasOneProductDiscountRequirementRule;
         private readonly ShoppingCartDiscountRule _shoppingCartDiscountRequirementRule;
+        private readonly IEnumerable<IDiscountRule> _discountRules;
 
         public DiscountProvider(
-        CustomerGroupDiscountRule customerGroupDiscountRequirementRule,
+            CustomerGroupDiscountRule customerGroupDiscountRequirementRule,
             HadSpentAmountDiscountRule hadSpentAmountDiscountRequirementRule,
             HasAllProductsDiscountRule hasAllProductsDiscountRequirementRule,
             HasOneProductDiscountRule hasOneProductDiscountRequirementRule,
-            ShoppingCartDiscountRule shoppingCartDiscountRequirementRule)
+            ShoppingCartDiscountRule shoppingCartDiscountRequirementRule,
+            IEnumerable<IDiscountRule> discountRules)
         {
             _customerGroupDiscountRequirementRule = customerGroupDiscountRequirementRule;
             _hadSpentAmountDiscountRequirementRule = hadSpentAmountDiscountRequirementRule;
             _hasAllProductsDiscountRequirementRule = hasAllProductsDiscountRequirementRule;
             _hasOneProductDiscountRequirementRule = hasOneProductDiscountRequirementRule;
             _shoppingCartDiscountRequirementRule = shoppingCartDiscountRequirementRule;
+            _discountRules = discountRules;
         }
 
 
@@ -48,6 +52,9 @@ namespace DiscountRules.Standard
                 _hasOneProductDiscountRequirementRule,
                 _shoppingCartDiscountRequirementRule
             };
+
+            rules.AddRange(_discountRules);
+
             return rules;
         }
     }
