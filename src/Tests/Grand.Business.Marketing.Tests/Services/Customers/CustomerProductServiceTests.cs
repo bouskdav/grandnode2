@@ -1,13 +1,15 @@
-﻿using Grand.Data.Tests.MongoDb;
+﻿using Grand.Business.Marketing.Services.Customers;
+using Grand.Data.Tests.MongoDb;
 using Grand.Domain.Customers;
 using Grand.Domain.Data;
 using Grand.Infrastructure.Caching;
+using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Tests.Caching;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Grand.Business.Marketing.Services.Customers.Tests
+namespace Grand.Business.Marketing.Tests.Services.Customers
 {
     [TestClass()]
     public class CustomerProductServiceTests
@@ -25,7 +27,7 @@ namespace Grand.Business.Marketing.Services.Customers.Tests
             _repositoryCustomerProduct = new MongoDBRepositoryTest<CustomerProduct>();
             _mediatorMock = new Mock<IMediator>();
 
-            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object);
+            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object, new CacheConfig(){ DefaultCacheTimeMinutes = 1});
             _customerProductService = new CustomerProductService(_repositoryCustomerProductPrice, _repositoryCustomerProduct, _cacheBase, _mediatorMock.Object);
         }
 

@@ -1,13 +1,15 @@
-﻿using Grand.Data.Tests.MongoDb;
+﻿using Grand.Business.Common.Services.Directory;
+using Grand.Data.Tests.MongoDb;
 using Grand.Domain.Data;
 using Grand.Domain.Directory;
 using Grand.Infrastructure.Caching;
+using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Tests.Caching;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Grand.Business.Common.Services.Directory.Tests
+namespace Grand.Business.Common.Tests.Services.Directory
 {
     [TestClass()]
     public class CountryServiceTests
@@ -23,8 +25,8 @@ namespace Grand.Business.Common.Services.Directory.Tests
             _repository = new MongoDBRepositoryTest<Country>();
             
             _mediatorMock = new Mock<IMediator>();
-            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object);
-            _countryService = new CountryService(_repository, _mediatorMock.Object, _cacheBase);
+            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object, new CacheConfig(){ DefaultCacheTimeMinutes = 1});
+            _countryService = new CountryService(_repository, _mediatorMock.Object, _cacheBase, new AccessControlConfig());
         }
 
         [TestMethod()]

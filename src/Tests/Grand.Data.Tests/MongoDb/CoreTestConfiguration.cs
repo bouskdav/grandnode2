@@ -133,7 +133,7 @@ namespace Grand.Data.Tests.MongoDb
                 {
                     __traceSource.TraceEvent(TraceEventType.Information, 0, $"CreateCluster: DescriptionChanged event handler called.");
                     __traceSource.TraceEvent(TraceEventType.Information, 0, $"CreateCluster: anyWritableServer = {anyWritableServer}.");
-                    __traceSource.TraceEvent(TraceEventType.Information, 0, $"CreateCluster: new description: {e.NewClusterDescription.ToString()}.");
+                    __traceSource.TraceEvent(TraceEventType.Information, 0, $"CreateCluster: new description: {e.NewClusterDescription}.");
                 }
                 Interlocked.Exchange(ref hasWritableServer, anyWritableServer ? 1 : 0);
             };
@@ -149,7 +149,7 @@ namespace Grand.Data.Tests.MongoDb
             {
                 var message = string.Format(
                     "Test cluster has no writable server. Client view of the cluster is {0}.",
-                    cluster.Description.ToString());
+                    cluster.Description);
                 throw new Exception(message);
             }
 
@@ -255,11 +255,9 @@ namespace Grand.Data.Tests.MongoDb
             {
                 return collectionName;
             }
-            else
-            {
-                var maxCollectionNameLength = 123 - (databaseNamespace.DatabaseName.Length + 1);
-                return collectionName.Substring(0, maxCollectionNameLength);
-            }
+
+            var maxCollectionNameLength = 123 - (databaseNamespace.DatabaseName.Length + 1);
+            return collectionName.Substring(0, maxCollectionNameLength);
         }
 
         private static string TruncateDatabaseNameIfTooLong(string databaseName)
@@ -268,10 +266,8 @@ namespace Grand.Data.Tests.MongoDb
             {
                 return databaseName;
             }
-            else
-            {
-                return databaseName.Substring(0, 63);
-            }
+
+            return databaseName.Substring(0, 63);
         }
         #endregion
 

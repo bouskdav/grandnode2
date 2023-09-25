@@ -5,7 +5,6 @@ using Grand.Business.Core.Interfaces.Customers;
 using Grand.Infrastructure.Configuration;
 using Grand.Domain.Common;
 using Grand.Domain.Customers;
-using Grand.SharedKernel.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
@@ -106,7 +105,7 @@ namespace Grand.Business.Authentication.Services
             var authenticationProperties = new AuthenticationProperties {
                 IsPersistent = isPersistent,
                 IssuedUtc = DateTime.UtcNow,
-                ExpiresUtc = DateTime.UtcNow.AddHours(CommonHelper.CookieAuthExpires)
+                ExpiresUtc = DateTime.UtcNow.AddHours(_securityConfig.CookieAuthExpires)
             };
 
             //sign in user
@@ -216,7 +215,7 @@ namespace Grand.Business.Authentication.Services
             _httpContextAccessor.HttpContext.Response.Cookies.Delete(CustomerCookieName);
 
             //Get the date date of current cookie expiration
-            var cookieExpiresDate = DateTime.UtcNow.AddHours(CommonHelper.CookieAuthExpires);
+            var cookieExpiresDate = DateTime.UtcNow.AddHours(_securityConfig.CookieAuthExpires);
 
             //If provided guid is empty (only remove cookies)
             if (customerGuid == Guid.Empty)

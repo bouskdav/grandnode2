@@ -2,18 +2,16 @@
 using Grand.Business.Core.Interfaces.Common.Configuration;
 using Grand.Business.Core.Interfaces.Common.Directory;
 using Grand.Business.Core.Interfaces.Common.Localization;
-using Grand.Business.Core.Interfaces.Common.Stores;
 using Grand.Business.Core.Utilities.Common.Security;
 using Grand.Domain.Directory;
 using Grand.Infrastructure.Caching;
 using Grand.SharedKernel;
-using Grand.Web.Admin.Extensions;
+using Grand.Web.Admin.Extensions.Mapping;
 using Grand.Web.Admin.Interfaces;
 using Grand.Web.Admin.Models.Directory;
 using Grand.Web.Common.DataSource;
 using Grand.Web.Common.Filters;
 using Grand.Web.Common.Security.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Globalization;
@@ -21,7 +19,7 @@ using System.Globalization;
 namespace Grand.Web.Admin.Controllers
 {
     [PermissionAuthorize(PermissionSystemName.Currencies)]
-    public partial class CurrencyController : BaseAdminController
+    public class CurrencyController : BaseAdminController
     {
         #region Fields
 
@@ -33,20 +31,21 @@ namespace Grand.Web.Admin.Controllers
         private readonly IDateTimeService _dateTimeService;
         private readonly ITranslationService _translationService;
         private readonly ILanguageService _languageService;
-        private readonly IStoreService _storeService;
         private readonly ICacheBase _cacheBase;
 
         #endregion
 
         #region Constructors
 
-        public CurrencyController(ICurrencyService currencyService,
+        public CurrencyController(
+            ICurrencyService currencyService,
             IExchangeRateService exchangeRateService,
             ICurrencyViewModelService currencyViewModelService,
-            CurrencySettings currencySettings, ISettingService settingService,
-            IDateTimeService dateTimeService, ITranslationService translationService,
+            CurrencySettings currencySettings, 
+            ISettingService settingService,
+            IDateTimeService dateTimeService, 
+            ITranslationService translationService,
             ILanguageService languageService,
-            IStoreService storeService,
             ICacheBase cacheBase)
         {
             _currencyService = currencyService;
@@ -57,7 +56,6 @@ namespace Grand.Web.Admin.Controllers
             _dateTimeService = dateTimeService;
             _translationService = translationService;
             _languageService = languageService;
-            _storeService = storeService;
             _cacheBase = cacheBase;
         }
 
@@ -107,10 +105,10 @@ namespace Grand.Web.Admin.Controllers
 
         [HttpPost]
         [PermissionAuthorizeAction(PermissionActionName.Edit)]
-        public async Task<IActionResult> List(IFormCollection formValues)
+        public async Task<IActionResult> List(ExchangeRateModel model)
         {
-            _currencySettings.ActiveExchangeRateProviderSystemName = formValues["exchangeRateProvider"];
-            _currencySettings.AutoUpdateEnabled = !formValues["autoUpdateEnabled"].Equals("false");
+            _currencySettings.ActiveExchangeRateProviderSystemName = model.ExchangeRateProvider;
+            _currencySettings.AutoUpdateEnabled = model.AutoUpdateEnabled;
             await _settingService.SaveSetting(_currencySettings);
             return RedirectToAction("List", "Currency");
         }

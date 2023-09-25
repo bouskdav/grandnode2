@@ -1,5 +1,5 @@
-﻿using Grand.Business.Core.Interfaces.Common.Localization;
-using Grand.Business.Core.Interfaces.Common.Logging;
+﻿using Grand.Business.Core.Interfaces.Common.Logging;
+using Grand.Business.Marketing.Services.PushNotifications;
 using Grand.Business.Marketing.Utilities;
 using Grand.Data.Tests.MongoDb;
 using Grand.Domain.Data;
@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http;
 
-namespace Grand.Business.Marketing.Services.PushNotifications.Tests
+namespace Grand.Business.Marketing.Tests.Services.PushNotifications
 {
     [TestClass()]
     public class PushNotificationsServiceTests
@@ -21,7 +21,6 @@ namespace Grand.Business.Marketing.Services.PushNotifications.Tests
         private IRepository<PushRegistration> _repositoryPushRegistration;
         private IRepository<PushMessage> _repositoryPushMessage;
         private Mock<IMediator> _mediatorMock;
-        private Mock<ITranslationService> _translationServiceMock;
         private Mock<ILogger> _loggerMock;
 
 
@@ -31,13 +30,11 @@ namespace Grand.Business.Marketing.Services.PushNotifications.Tests
             _repositoryPushRegistration = new MongoDBRepositoryTest<PushRegistration>();
             _repositoryPushMessage = new MongoDBRepositoryTest<PushMessage>();
             _mediatorMock = new Mock<IMediator>();
-            _translationServiceMock = new Mock<ITranslationService>();
-            _translationServiceMock.Setup(x => x.GetResource(It.IsAny<string>())).Returns("translate");
             _loggerMock = new Mock<ILogger>();
 
             var mockMessageHandler = new Mock<HttpMessageHandler>();
 
-            string output = JsonConvert.SerializeObject(new JsonResponse() { success = 1, failure = 0, canonical_ids = 1 });
+            var output = JsonConvert.SerializeObject(new JsonResponse() { success = 1, failure = 0, canonical_ids = 1 });
 
             mockMessageHandler.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
@@ -47,7 +44,7 @@ namespace Grand.Business.Marketing.Services.PushNotifications.Tests
                 });
             var httpClient = new HttpClient(mockMessageHandler.Object);
 
-            _pushNotificationsService = new PushNotificationsService(_repositoryPushRegistration, _repositoryPushMessage, _mediatorMock.Object, new PushNotificationsSettings(), _translationServiceMock.Object,
+            _pushNotificationsService = new PushNotificationsService(_repositoryPushRegistration, _repositoryPushMessage, _mediatorMock.Object, new PushNotificationsSettings(), 
                 _loggerMock.Object, httpClient);
         }
 

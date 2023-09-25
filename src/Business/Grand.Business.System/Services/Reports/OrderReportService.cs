@@ -141,7 +141,7 @@ namespace Grand.Business.System.Services.Reports
                     report.Add(new OrderByTimeReportLine() {
                         Time = item.Year.ToString().PadLeft(2, '0') + "-" + item.Month.ToString().PadLeft(2, '0'),
                         SumOrders = Math.Round(item.Amount, 2),
-                        TotalOrders = item.Count,
+                        TotalOrders = item.Count
                     });
                 }
             }
@@ -162,7 +162,7 @@ namespace Grand.Business.System.Services.Reports
                     report.Add(new OrderByTimeReportLine() {
                         Time = item.Year.ToString().PadLeft(2, '0') + "-" + item.Month.ToString().PadLeft(2, '0') + "-" + item.Day.ToString().PadLeft(2, '0'),
                         SumOrders = Math.Round(item.Amount, 2),
-                        TotalOrders = item.Count,
+                        TotalOrders = item.Count
                     });
                 }
             }
@@ -267,7 +267,7 @@ namespace Grand.Business.System.Services.Reports
                 CountOrders = 0,
                 SumShippingExclTax = 0,
                 SumTax = 0,
-                SumOrders = 0,
+                SumOrders = 0
             };
             return await Task.FromResult(item2);
         }
@@ -396,7 +396,7 @@ namespace Grand.Business.System.Services.Reports
 
             var query = from p in builderquery
                         from item in p.OrderItems
-                        select item;
+                        select new {VendorId = item.VendorId, ProductId = item.ProductId, Quantity = item.Quantity, PriceInclTax = item.PriceInclTax, Rate = p.Rate };
 
             if (!string.IsNullOrEmpty(vendorId))
             {
@@ -405,7 +405,7 @@ namespace Grand.Business.System.Services.Reports
 
             var queryItem = query.GroupBy(x => new { ProductId = x.ProductId }).Select(x => new BestsellersReportLine() {
                 ProductId = x.Key.ProductId,
-                TotalAmount = x.Sum(y => y.PriceInclTax),
+                TotalAmount = x.Sum(y => y.PriceInclTax / y.Rate),
                 TotalQuantity = x.Sum(y => y.Quantity)
             });
 
@@ -463,7 +463,7 @@ namespace Grand.Business.System.Services.Reports
                           select new
                           {
                               ProductId = g.Key,
-                              ProductsPurchased = g.Sum(x => x.Quantity),
+                              ProductsPurchased = g.Sum(x => x.Quantity)
                           };
             product = product.OrderByDescending(x => x.ProductsPurchased);
             if (recordsToReturn > 0)
@@ -498,7 +498,7 @@ namespace Grand.Business.System.Services.Reports
                     (string.IsNullOrEmpty(storeId) || order.StoreId == storeId) &&
                     createdFromUtc.Value <= order.CreatedOnUtc &&
                     createdToUtc.Value >= order.CreatedOnUtc &&
-                    (!order.Deleted)
+                    !order.Deleted
                 from orderItem in order.OrderItems
                 select new { orderItem.ProductId }).ToList().Distinct().Select(x => x.ProductId);
 
@@ -506,7 +506,7 @@ namespace Grand.Business.System.Services.Reports
                             orderby p.Name
                             where !query.Contains(p.Id) &&
                                   //include only simple products
-                                  (p.ProductTypeId == ProductType.SimpleProduct) &&
+                                  p.ProductTypeId == ProductType.SimpleProduct &&
                                   (vendorId == "" || p.VendorId == vendorId) &&
                                   (string.IsNullOrEmpty(storeId) || p.Stores.Contains(storeId) || p.LimitedToStores == false) &&
                                   (showHidden || p.Published)

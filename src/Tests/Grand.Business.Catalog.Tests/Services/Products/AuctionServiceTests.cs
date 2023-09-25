@@ -1,16 +1,18 @@
-﻿using Grand.Data.Tests.MongoDb;
+﻿using Grand.Business.Catalog.Services.Products;
+using Grand.Data.Tests.MongoDb;
 using Grand.Domain.Catalog;
 using Grand.Domain.Customers;
 using Grand.Domain.Data;
 using Grand.Infrastructure;
 using Grand.Infrastructure.Caching;
+using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Tests.Caching;
 using Grand.SharedKernel.Extensions;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Grand.Business.Catalog.Services.Products.Tests
+namespace Grand.Business.Catalog.Tests.Services.Products
 {
     [TestClass()]
     public class AuctionServiceTests
@@ -33,7 +35,7 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             _workContextMock.Setup(c => c.CurrentStore).Returns(() => new Domain.Stores.Store() { Id = "" });
             _workContextMock.Setup(c => c.CurrentCustomer).Returns(() => new Customer());
             _mediatorMock = new Mock<IMediator>();
-            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object);
+            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object, new CacheConfig(){ DefaultCacheTimeMinutes = 1});
             _auctionService = new AuctionService(_repository, _productrepository, _cacheBase, _mediatorMock.Object);
         }
 
@@ -203,12 +205,12 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             //Arrange
             var product1 = new Product() {
                 ProductTypeId = ProductType.Auction,
-                AvailableEndDateTimeUtc = DateTime.UtcNow.AddDays(1),
+                AvailableEndDateTimeUtc = DateTime.UtcNow.AddDays(1)
             };
             _productrepository.Insert(product1);
             var product2 = new Product() {
                 ProductTypeId = ProductType.Auction,
-                AvailableEndDateTimeUtc = DateTime.UtcNow.AddDays(-1),
+                AvailableEndDateTimeUtc = DateTime.UtcNow.AddDays(-1)
             };
             _productrepository.Insert(product2);
 
@@ -225,7 +227,7 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             //Arrange
             var product1 = new Product() {
                 ProductTypeId = ProductType.Auction,
-                AvailableEndDateTimeUtc = DateTime.UtcNow.AddDays(1),
+                AvailableEndDateTimeUtc = DateTime.UtcNow.AddDays(1)
             };
             _productrepository.Insert(product1);
 

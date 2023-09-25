@@ -1,5 +1,4 @@
-﻿using Grand.Business.Core.Interfaces.System.Installation;
-using Grand.Domain.Directory;
+﻿using Grand.Domain.Directory;
 
 namespace Grand.Business.System.Services.Installation
 {
@@ -22,7 +21,7 @@ namespace Grand.Business.System.Services.Installation
                     RoundingTypeId = RoundingType.Rounding001,
                     MidpointRoundId = MidpointRounding.ToEven,
                     CreatedOnUtc = DateTime.UtcNow,
-                    UpdatedOnUtc = DateTime.UtcNow,
+                    UpdatedOnUtc = DateTime.UtcNow
                 },
                 new Currency
                 {
@@ -37,7 +36,7 @@ namespace Grand.Business.System.Services.Installation
                     RoundingTypeId = RoundingType.Rounding001,
                     MidpointRoundId = MidpointRounding.AwayFromZero,
                     CreatedOnUtc = DateTime.UtcNow,
-                    UpdatedOnUtc = DateTime.UtcNow,
+                    UpdatedOnUtc = DateTime.UtcNow
                 },
                 new Currency
                 {
@@ -52,7 +51,7 @@ namespace Grand.Business.System.Services.Installation
                     RoundingTypeId = RoundingType.Rounding001,
                     MidpointRoundId = MidpointRounding.AwayFromZero,
                     CreatedOnUtc = DateTime.UtcNow,
-                    UpdatedOnUtc = DateTime.UtcNow,
+                    UpdatedOnUtc = DateTime.UtcNow
                 },
                 new Currency
                 {
@@ -67,7 +66,7 @@ namespace Grand.Business.System.Services.Installation
                     RoundingTypeId = RoundingType.Rounding001,
                     MidpointRoundId = MidpointRounding.ToEven,
                     CreatedOnUtc = DateTime.UtcNow,
-                    UpdatedOnUtc = DateTime.UtcNow,
+                    UpdatedOnUtc = DateTime.UtcNow
                 },
                 new Currency
                 {
@@ -82,7 +81,7 @@ namespace Grand.Business.System.Services.Installation
                     RoundingTypeId = RoundingType.Rounding001,
                     MidpointRoundId = MidpointRounding.ToEven,
                     CreatedOnUtc = DateTime.UtcNow,
-                    UpdatedOnUtc = DateTime.UtcNow,
+                    UpdatedOnUtc = DateTime.UtcNow
                 },
                 new Currency
                 {
@@ -97,8 +96,8 @@ namespace Grand.Business.System.Services.Installation
                     RoundingTypeId = RoundingType.Rounding001,
                     MidpointRoundId = MidpointRounding.AwayFromZero,
                     CreatedOnUtc = DateTime.UtcNow,
-                    UpdatedOnUtc = DateTime.UtcNow,
-                },
+                    UpdatedOnUtc = DateTime.UtcNow
+                }
             };
             await _currencyRepository.InsertAsync(currencies);
         }

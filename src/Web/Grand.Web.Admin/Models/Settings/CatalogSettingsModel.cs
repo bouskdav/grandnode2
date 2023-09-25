@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Grand.Web.Admin.Models.Settings
 {
-    public partial class CatalogSettingsModel : BaseModel
+    public class CatalogSettingsModel : BaseModel
     {
         public CatalogSettingsModel()
         {
             DefaultViewModes = new List<SelectListItem>();
-            DefaultViewModes.Add(new SelectListItem() { Text = "grid", Value = "grid" });
-            DefaultViewModes.Add(new SelectListItem() { Text = "list", Value = "list" });
+            DefaultViewModes.Add(new SelectListItem { Text = "grid", Value = "grid" });
+            DefaultViewModes.Add(new SelectListItem { Text = "list", Value = "list" });
         }
 
         
@@ -76,6 +76,9 @@ namespace Grand.Web.Admin.Models.Settings
 
         [GrandResourceDisplayName("Admin.Settings.Catalog.NotifyStoreOwnerAboutNewProductReviews")]
         public bool NotifyStoreOwnerAboutNewProductReviews { get; set; }
+        
+        [GrandResourceDisplayName("Admin.Settings.Catalog.FilterProductRating")]
+        public string FilterProductRating { get; set; }
 
         [GrandResourceDisplayName("Admin.Settings.Catalog.EmailAFriendEnabled")]
         public bool EmailAFriendEnabled { get; set; }

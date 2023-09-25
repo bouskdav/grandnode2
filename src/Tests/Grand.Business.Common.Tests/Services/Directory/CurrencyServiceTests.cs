@@ -33,7 +33,6 @@ namespace Grand.Business.Common.Tests.Services.Directory
         public void TestInitialize()
         {
             CommonPath.BaseDirectory = "";
-            CommonHelper.CacheTimeMinutes = 10;
 
             currencyUSD = new Currency {
                 Id = "1",
@@ -45,7 +44,7 @@ namespace Grand.Business.Common.Tests.Services.Directory
                 Published = true,
                 DisplayOrder = 1,
                 CreatedOnUtc = DateTime.UtcNow,
-                UpdatedOnUtc = DateTime.UtcNow,
+                UpdatedOnUtc = DateTime.UtcNow
             };
             currencyEUR = new Currency {
                 Id = "2",
@@ -57,7 +56,7 @@ namespace Grand.Business.Common.Tests.Services.Directory
                 Published = true,
                 DisplayOrder = 2,
                 CreatedOnUtc = DateTime.UtcNow,
-                UpdatedOnUtc = DateTime.UtcNow,
+                UpdatedOnUtc = DateTime.UtcNow
             };
             currencyRUR = new Currency {
                 Id = "3",
@@ -69,7 +68,7 @@ namespace Grand.Business.Common.Tests.Services.Directory
                 Published = true,
                 DisplayOrder = 3,
                 CreatedOnUtc = DateTime.UtcNow,
-                UpdatedOnUtc = DateTime.UtcNow,
+                UpdatedOnUtc = DateTime.UtcNow
             };
 
             tempCurrencyRepository = new Mock<IRepository<Currency>>();

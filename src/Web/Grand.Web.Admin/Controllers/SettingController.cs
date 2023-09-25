@@ -7,7 +7,7 @@ using Grand.Business.Core.Interfaces.Common.Localization;
 using Grand.Business.Core.Interfaces.Common.Logging;
 using Grand.Business.Core.Utilities.Common.Security;
 using Grand.Business.Core.Interfaces.Storage;
-using Grand.Domain.AdminSearch;
+using Grand.Domain.Admin;
 using Grand.Domain.Blogs;
 using Grand.Domain.Catalog;
 using Grand.Domain.Common;
@@ -27,7 +27,8 @@ using Grand.Domain.Vendors;
 using Grand.Infrastructure;
 using Grand.Infrastructure.Caching;
 using Grand.SharedKernel.Extensions;
-using Grand.Web.Admin.Extensions;
+using Grand.Web.Admin.Extensions.Mapping;
+using Grand.Web.Admin.Extensions.Mapping.Settings;
 using Grand.Web.Admin.Models.Settings;
 using Grand.Web.Common.DataSource;
 using Grand.Web.Common.Extensions;
@@ -36,14 +37,13 @@ using Grand.Web.Common.Security.Authorization;
 using Grand.Web.Common.Security.Captcha;
 using Grand.Web.Common.Themes;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Grand.Web.Admin.Controllers
 {
     [PermissionAuthorize(PermissionSystemName.Settings)]
-    public partial class SettingController : BaseAdminController
+    public class SettingController : BaseAdminController
     {
         #region Fields
 
@@ -110,13 +110,13 @@ namespace Grand.Web.Admin.Controllers
             var blogSettings = _settingService.LoadSetting<BlogSettings>(storeScope);
             var newsSettings = _settingService.LoadSetting<NewsSettings>(storeScope);
             var knowledgebaseSettings = _settingService.LoadSetting<KnowledgebaseSettings>(storeScope);
-            var model = new ContentSettingsModel() {
+            var model = new ContentSettingsModel {
                 BlogSettings = blogSettings.ToModel(),
                 NewsSettings = newsSettings.ToModel(),
-                KnowledgebaseSettings = knowledgebaseSettings.ToModel()
+                KnowledgebaseSettings = knowledgebaseSettings.ToModel(),
+                ActiveStore = storeScope
             };
 
-            model.ActiveStore = storeScope;
             return View(model);
         }
 
@@ -232,11 +232,11 @@ namespace Grand.Web.Admin.Controllers
             var model = new List<SortOptionModel>();
             foreach (int option in Enum.GetValues(typeof(ProductSortingEnum)))
             {
-                model.Add(new SortOptionModel() {
+                model.Add(new SortOptionModel {
                     Id = option,
                     Name = ((ProductSortingEnum)option).GetTranslationEnum(_translationService, _workContext),
                     IsActive = !catalogSettings.ProductSortingEnumDisabled.Contains(option),
-                    DisplayOrder = catalogSettings.ProductSortingEnumDisplayOrder.TryGetValue(option, out int value) ? value : option
+                    DisplayOrder = catalogSettings.ProductSortingEnumDisplayOrder.TryGetValue(option, out var value) ? value : option
                 });
             }
             var gridModel = new DataSourceResult {
@@ -253,10 +253,15 @@ namespace Grand.Web.Admin.Controllers
             var catalogSettings = _settingService.LoadSetting<CatalogSettings>(storeScope);
 
             catalogSettings.ProductSortingEnumDisplayOrder[model.Id] = model.DisplayOrder;
-            if (model.IsActive && catalogSettings.ProductSortingEnumDisabled.Contains(model.Id))
-                catalogSettings.ProductSortingEnumDisabled.Remove(model.Id);
-            if (!model.IsActive && !catalogSettings.ProductSortingEnumDisabled.Contains(model.Id))
-                catalogSettings.ProductSortingEnumDisabled.Add(model.Id);
+            switch (model.IsActive)
+            {
+                case true when catalogSettings.ProductSortingEnumDisabled.Contains(model.Id):
+                    catalogSettings.ProductSortingEnumDisabled.Remove(model.Id);
+                    break;
+                case false when !catalogSettings.ProductSortingEnumDisabled.Contains(model.Id):
+                    catalogSettings.ProductSortingEnumDisabled.Add(model.Id);
+                    break;
+            }
 
             await _settingService.SaveSetting(catalogSettings, storeScope);
 
@@ -275,27 +280,27 @@ namespace Grand.Web.Admin.Controllers
             var orderSettings = _settingService.LoadSetting<OrderSettings>(storeScope);
             var shoppingCartSettings = _settingService.LoadSetting<ShoppingCartSettings>(storeScope);
 
-            var model = new SalesSettingsModel() {
+            var model = new SalesSettingsModel {
                 LoyaltyPointsSettings = loyaltyPointsSettings.ToModel(),
                 OrderSettings = orderSettings.ToModel(),
                 ShoppingCartSettings = shoppingCartSettings.ToModel(),
                 ActiveStore = storeScope
             };
 
-            var currencySettings = _settingService.LoadSetting<CurrencySettings>("");
+            var currencySettings = _settingService.LoadSetting<CurrencySettings>();
             var currency = await _currencyService.GetCurrencyById(currencySettings.PrimaryStoreCurrencyId);
 
             //loyal
             model.LoyaltyPointsSettings.PrimaryStoreCurrencyCode = currency?.CurrencyCode;
             //order statuses
             var status = await _orderStatusService.GetAll();
-            model.LoyaltyPointsSettings.PointsForPurchases_Awarded_OrderStatuses = status.Select(x => new SelectListItem() { Value = x.StatusId.ToString(), Text = x.Name }).ToList();
+            model.LoyaltyPointsSettings.PointsForPurchases_Awarded_OrderStatuses = status.Select(x => new SelectListItem { Value = x.StatusId.ToString(), Text = x.Name }).ToList();
 
             //orders
             model.OrderSettings.PrimaryStoreCurrencyCode = currency?.CurrencyCode;
 
             //gift voucher activation
-            model.OrderSettings.GiftVouchers_Activated_OrderStatuses = status.Select(x => new SelectListItem() { Value = x.StatusId.ToString(), Text = x.Name }).ToList();
+            model.OrderSettings.GiftVouchers_Activated_OrderStatuses = status.Select(x => new SelectListItem { Value = x.StatusId.ToString(), Text = x.Name }).ToList();
             model.OrderSettings.GiftVouchers_Activated_OrderStatuses.Insert(0, new SelectListItem { Text = "---", Value = "0" });
 
             return View(model);
@@ -666,7 +671,7 @@ namespace Grand.Web.Admin.Controllers
             model.SecuritySettings = captchaSettings.ToModel();
 
             if (securitySettings.AdminAreaAllowedIpAddresses != null)
-                for (int i = 0; i < securitySettings.AdminAreaAllowedIpAddresses.Count; i++)
+                for (var i = 0; i < securitySettings.AdminAreaAllowedIpAddresses.Count; i++)
                 {
                     model.SecuritySettings.AdminAreaAllowedIpAddresses += securitySettings.AdminAreaAllowedIpAddresses[i];
                     if (i != securitySettings.AdminAreaAllowedIpAddresses.Count - 1)
@@ -678,10 +683,6 @@ namespace Grand.Web.Admin.Controllers
             //PDF settings
             var pdfSettings = _settingService.LoadSetting<PdfSettings>(storeScope);
             model.PdfSettings = pdfSettings.ToModel();
-
-            //google analytics
-            var googleAnalyticsSettings = _settingService.LoadSetting<GoogleAnalyticsSettings>(storeScope);
-            model.GoogleAnalyticsSettings = googleAnalyticsSettings.ToModel();
 
             //display menu settings
             var displayMenuItemSettings = _settingService.LoadSetting<MenuItemSettings>(storeScope);
@@ -744,12 +745,7 @@ namespace Grand.Web.Admin.Controllers
             var pdfSettings = _settingService.LoadSetting<PdfSettings>(storeScope);
             pdfSettings = model.PdfSettings.ToEntity(pdfSettings);
             await _settingService.SaveSetting(pdfSettings, storeScope);
-
-            //googleanalytics settings
-            var googleAnalyticsSettings = _settingService.LoadSetting<GoogleAnalyticsSettings>(storeScope);
-            googleAnalyticsSettings = model.GoogleAnalyticsSettings.ToEntity(googleAnalyticsSettings);
-            await _settingService.SaveSetting(googleAnalyticsSettings, storeScope);
-
+            
             //menu item settings
             var displayMenuItemSettings = _settingService.LoadSetting<MenuItemSettings>(storeScope);
             displayMenuItemSettings = model.DisplayMenuSettings.ToEntity(displayMenuItemSettings);
@@ -807,8 +803,8 @@ namespace Grand.Web.Admin.Controllers
             var savedFilePath = CommonPath.WebMapPath(filename);
             if (System.IO.File.Exists(oryginalFilePath))
             {
-                string[] lines = System.IO.File.ReadAllLines(oryginalFilePath);
-                int i = 0;
+                var lines = System.IO.File.ReadAllLines(oryginalFilePath);
+                var i = 0;
                 foreach (var line in lines)
                 {
                     if (line.Contains("apiKey"))
@@ -917,9 +913,9 @@ namespace Grand.Web.Admin.Controllers
             await _settingService.SaveSetting(settings);
 
             //order ident
-            if (model.OrderIdent.HasValue && model.OrderIdent.Value > 0)
+            if (model.OrderIdent is > 0)
             {
-                await _mediator.Send(new MaxOrderNumberCommand() { OrderNumber = model.OrderIdent });
+                await _mediator.Send(new MaxOrderNumberCommand { OrderNumber = model.OrderIdent });
             }
 
             //admin area
@@ -977,39 +973,32 @@ namespace Grand.Web.Admin.Controllers
 
         private async Task SavePictureStorage(bool storeIdDb)
         {
-            int pageIndex = 0;
+            var pageIndex = 0;
             const int pageSize = 100;
-            try
+            while (true)
             {
-                while (true)
+                var pictures = _pictureService.GetPictures(pageIndex, pageSize);
+                pageIndex++;
+                if (!pictures.Any())
+                    break;
+
+                foreach (var picture in pictures)
                 {
-                    var pictures = _pictureService.GetPictures(pageIndex, pageSize);
-                    pageIndex++;
-                    if (!pictures.Any())
-                        break;
-
-                    foreach (var picture in pictures)
+                    var pictureBinary = await _pictureService.LoadPictureBinary(picture, !storeIdDb);
+                    if (storeIdDb)
+                        await _pictureService.DeletePictureOnFileSystem(picture);
+                    else
                     {
-                        var pictureBinary = await _pictureService.LoadPictureBinary(picture, !storeIdDb);
-                        if (storeIdDb)
-                            await _pictureService.DeletePictureOnFileSystem(picture);
-                        else
-                        {
-                            //now on file system
-                            if (pictureBinary != null)
-                                await _pictureService.SavePictureInFile(picture.Id, pictureBinary, picture.MimeType);
-                        }
-                        picture.PictureBinary = storeIdDb ? pictureBinary : Array.Empty<byte>();
-                        picture.IsNew = true;
-
-                        await _pictureService.UpdatePicture(picture);
+                        //now on file system
+                        if (pictureBinary != null)
+                            await _pictureService.SavePictureInFile(picture.Id, pictureBinary, picture.MimeType);
                     }
+                    picture.PictureBinary = storeIdDb ? pictureBinary : Array.Empty<byte>();
+                    picture.IsNew = true;
+
+                    await _pictureService.UpdatePicture(picture);
                 }
             }
-            finally
-            {
-            }
-
         }
         #endregion
 

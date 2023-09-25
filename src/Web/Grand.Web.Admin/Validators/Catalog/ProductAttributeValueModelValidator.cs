@@ -27,7 +27,7 @@ namespace Grand.Web.Admin.Validators.Catalog
 
             if (!string.IsNullOrEmpty(workContext.CurrentCustomer.StaffStoreId))
             {
-                RuleFor(x => x).MustAsync(async (x, y, context) =>
+                RuleFor(x => x).MustAsync(async (x, _, _) =>
                 {
                     var product = await productService.GetProductById(x.ProductId);
                     if (product != null)
@@ -39,16 +39,35 @@ namespace Grand.Web.Admin.Validators.Catalog
             }
             else if (workContext.CurrentVendor != null)
             {
-                RuleFor(x => x).MustAsync(async (x, y, context) =>
+                RuleFor(x => x).MustAsync(async (x, _, _) =>
                 {
                     var product = await productService.GetProductById(x.ProductId);
                     if (product != null)
-                        if (product != null && product.VendorId != workContext.CurrentVendor.Id)
+                        if (product.VendorId != workContext.CurrentVendor.Id)
                             return false;
 
                     return true;
                 }).WithMessage(translationService.GetResource("Admin.Catalog.Products.Permisions"));
             }
+            RuleFor(x => x).CustomAsync(async (x, context, _) =>
+            {
+                var product = await productService.GetProductById(x.ProductId);
+                var productAttributeMapping = product.ProductAttributeMappings.FirstOrDefault(y => y.Id == x.ProductAttributeMappingId);
+                switch (productAttributeMapping?.AttributeControlTypeId)
+                {
+                    case AttributeControlType.ColorSquares:
+                    {
+                        //ensure valid color is chosen/entered
+                        if (string.IsNullOrEmpty(x.ColorSquaresRgb))
+                            context.AddFailure("Color is required");
+                        break;
+                    }
+                    //ensure a picture is uploaded
+                    case AttributeControlType.ImageSquares when string.IsNullOrEmpty(x.ImageSquaresPictureId):
+                        context.AddFailure("Image is required");
+                        break;
+                }
+            });
         }
     }
 }

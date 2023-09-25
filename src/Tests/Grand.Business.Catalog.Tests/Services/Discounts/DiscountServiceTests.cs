@@ -1,4 +1,4 @@
-﻿using Grand.Business.Catalog.Tests.Services.Discounts;
+﻿using Grand.Business.Catalog.Services.Discounts;
 using Grand.Business.Core.Interfaces.Catalog.Discounts;
 using Grand.Business.Core.Interfaces.Common.Localization;
 using Grand.Business.Core.Utilities.Catalog;
@@ -9,13 +9,14 @@ using Grand.Domain.Data;
 using Grand.Domain.Discounts;
 using Grand.Infrastructure;
 using Grand.Infrastructure.Caching;
+using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Tests.Caching;
 using Grand.SharedKernel.Extensions;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Grand.Business.Catalog.Services.Discounts.Tests
+namespace Grand.Business.Catalog.Tests.Services.Discounts
 {
     [TestClass()]
     public class DiscountServiceTests
@@ -46,13 +47,13 @@ namespace Grand.Business.Catalog.Services.Discounts.Tests
             _workContextMock.Setup(c => c.CurrentStore).Returns(() => new Domain.Stores.Store() { Id = "" });
             _workContextMock.Setup(c => c.CurrentCustomer).Returns(() => new Customer());
             _mediatorMock = new Mock<IMediator>();
-            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object);
+            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object, new CacheConfig(){ DefaultCacheTimeMinutes = 1});
 
             _discountProviders = new List<IDiscountProvider> { new DiscountProviderTest() };
             _discountAmountProviders = new List<IDiscountAmountProvider> { new DiscountAmountProviderTests() };
 
-            _dicountService = new DiscountService(_cacheBase, _repository, _discountCouponRepository, _discountUsageHistoryRepository, _translationServiceMock.Object, 
-                _workContextMock.Object, _discountProviders, _discountAmountProviders, _mediatorMock.Object);
+            _dicountService = new DiscountService(_cacheBase, _repository, _discountCouponRepository, _discountUsageHistoryRepository,  
+                _workContextMock.Object, _discountProviders, _discountAmountProviders, _mediatorMock.Object, new AccessControlConfig());
         }
 
         [TestMethod()]
@@ -78,13 +79,13 @@ namespace Grand.Business.Catalog.Services.Discounts.Tests
             //Arrange
             var discount1 = new Discount() {
                 Name = "test1",
-                IsEnabled = true,
+                IsEnabled = true
             };
             await _dicountService.InsertDiscount(discount1);
             
             var discount2 = new Discount() {
                 Name = "test2",
-                IsEnabled = true,
+                IsEnabled = true
             };
 
             await _dicountService.InsertDiscount(discount2);
@@ -185,7 +186,7 @@ namespace Grand.Business.Catalog.Services.Discounts.Tests
 
             var discountCoupon = new DiscountCoupon() {
                 CouponCode = "TEST123",
-                DiscountId = discount.Id,
+                DiscountId = discount.Id
             };
             await _discountCouponRepository.InsertAsync(discountCoupon);
 
@@ -209,7 +210,7 @@ namespace Grand.Business.Catalog.Services.Discounts.Tests
 
             var discountCoupon = new DiscountCoupon() {
                 CouponCode = "TEST123",
-                DiscountId = discount.Id,
+                DiscountId = discount.Id
             };
             await _discountCouponRepository.InsertAsync(discountCoupon);
 
@@ -232,17 +233,17 @@ namespace Grand.Business.Catalog.Services.Discounts.Tests
 
             var discountCoupon = new DiscountCoupon() {
                 CouponCode = "TEST123",
-                DiscountId = discount.Id,
+                DiscountId = discount.Id
             };
             await _discountCouponRepository.InsertAsync(discountCoupon);
             var discountCoupon1 = new DiscountCoupon() {
                 CouponCode = "TEST124",
-                DiscountId = discount.Id,
+                DiscountId = discount.Id
             };
             await _discountCouponRepository.InsertAsync(discountCoupon1);
             var discountCoupon2 = new DiscountCoupon() {
                 CouponCode = "TEST125",
-                DiscountId = "id",
+                DiscountId = "id"
             };
             await _discountCouponRepository.InsertAsync(discountCoupon2);
             //Act
@@ -263,17 +264,17 @@ namespace Grand.Business.Catalog.Services.Discounts.Tests
 
             var discountCoupon = new DiscountCoupon() {
                 CouponCode = "TEST123",
-                DiscountId = discount.Id,
+                DiscountId = discount.Id
             };
             await _discountCouponRepository.InsertAsync(discountCoupon);
             var discountCoupon1 = new DiscountCoupon() {
                 CouponCode = "TEST124",
-                DiscountId = discount.Id,
+                DiscountId = discount.Id
             };
             await _discountCouponRepository.InsertAsync(discountCoupon1);
             var discountCoupon2 = new DiscountCoupon() {
                 CouponCode = "TEST125",
-                DiscountId = "id",
+                DiscountId = "id"
             };
             await _discountCouponRepository.InsertAsync(discountCoupon2);
             //Act
@@ -295,17 +296,17 @@ namespace Grand.Business.Catalog.Services.Discounts.Tests
 
             var discountCoupon = new DiscountCoupon() {
                 CouponCode = "TEST123",
-                DiscountId = discount.Id,
+                DiscountId = discount.Id
             };
             await _discountCouponRepository.InsertAsync(discountCoupon);
             var discountCoupon1 = new DiscountCoupon() {
                 CouponCode = "TEST124",
-                DiscountId = discount.Id,
+                DiscountId = discount.Id
             };
             await _discountCouponRepository.InsertAsync(discountCoupon1);
             var discountCoupon2 = new DiscountCoupon() {
                 CouponCode = "TEST125",
-                DiscountId = "id",
+                DiscountId = "id"
             };
             await _discountCouponRepository.InsertAsync(discountCoupon2);
             //Act
@@ -327,17 +328,17 @@ namespace Grand.Business.Catalog.Services.Discounts.Tests
 
             var discountCoupon = new DiscountCoupon() {
                 CouponCode = "TEST123",
-                DiscountId = discount.Id,
+                DiscountId = discount.Id
             };
             await _discountCouponRepository.InsertAsync(discountCoupon);
             var discountCoupon1 = new DiscountCoupon() {
                 CouponCode = "TEST124",
-                DiscountId = discount.Id,
+                DiscountId = discount.Id
             };
             await _discountCouponRepository.InsertAsync(discountCoupon1);
             var discountCoupon2 = new DiscountCoupon() {
                 CouponCode = "TEST125",
-                DiscountId = "id",
+                DiscountId = "id"
             };
             await _discountCouponRepository.InsertAsync(discountCoupon2);
 
@@ -359,7 +360,7 @@ namespace Grand.Business.Catalog.Services.Discounts.Tests
 
             var discountCoupon = new DiscountCoupon() {
                 CouponCode = "TEST123",
-                DiscountId = discount.Id,
+                DiscountId = discount.Id
             };
             //Act
             await _discountCouponRepository.InsertAsync(discountCoupon);
@@ -380,7 +381,7 @@ namespace Grand.Business.Catalog.Services.Discounts.Tests
 
             var discountCoupon = new DiscountCoupon() {
                 CouponCode = "TEST123",
-                DiscountId = discount.Id,
+                DiscountId = discount.Id
             };
             await _discountCouponRepository.InsertAsync(discountCoupon);
 
@@ -478,7 +479,7 @@ namespace Grand.Business.Catalog.Services.Discounts.Tests
             var discount = new Discount() {
                 Name = "test",
                 IsEnabled = true,
-                CurrencyCode = "EUR",                
+                CurrencyCode = "EUR"
             };
             await _dicountService.InsertDiscount(discount);
             var discountCoupon = new DiscountCoupon() {
@@ -503,7 +504,7 @@ namespace Grand.Business.Catalog.Services.Discounts.Tests
                 Name = "test",
                 IsEnabled = true,
                 CurrencyCode = "USD",
-                EndDateUtc = DateTime.UtcNow.AddDays(-1),
+                EndDateUtc = DateTime.UtcNow.AddDays(-1)
             };
             await _dicountService.InsertDiscount(discount);
             var discountCoupon = new DiscountCoupon() {
@@ -526,7 +527,7 @@ namespace Grand.Business.Catalog.Services.Discounts.Tests
             var discount = new Discount() {
                 Name = "test",
                 IsEnabled = false,
-                CurrencyCode = "USD",
+                CurrencyCode = "USD"
             };
             await _dicountService.InsertDiscount(discount);
             var discountCoupon = new DiscountCoupon() {

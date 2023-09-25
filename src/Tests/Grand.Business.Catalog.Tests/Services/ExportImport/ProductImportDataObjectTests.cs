@@ -1,8 +1,15 @@
 ﻿using AutoMapper;
+using Grand.Business.Catalog.Services.ExportImport;
 using Grand.Business.Catalog.Services.Products;
-using Grand.Business.Catalog.Services.ExportImport.Dto;
 using Grand.Business.Common.Services.Security;
+using Grand.Business.Core.Dto;
+using Grand.Business.Core.Interfaces.Catalog.Brands;
+using Grand.Business.Core.Interfaces.Catalog.Categories;
+using Grand.Business.Core.Interfaces.Catalog.Collections;
+using Grand.Business.Core.Interfaces.Catalog.Directory;
 using Grand.Business.Core.Interfaces.Catalog.Products;
+using Grand.Business.Core.Interfaces.Catalog.Tax;
+using Grand.Business.Core.Interfaces.Checkout.Shipping;
 using Grand.Business.Core.Interfaces.Common.Localization;
 using Grand.Business.Core.Interfaces.Common.Seo;
 using Grand.Business.Core.Interfaces.Storage;
@@ -13,21 +20,15 @@ using Grand.Domain.Data;
 using Grand.Domain.Localization;
 using Grand.Infrastructure;
 using Grand.Infrastructure.Caching;
+using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Mapper;
 using Grand.Infrastructure.Tests.Caching;
-using Grand.Infrastructure.TypeSearchers;
+using Grand.Infrastructure.TypeSearch;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Grand.Business.Core.Interfaces.Checkout.Shipping;
-using Grand.Business.Core.Interfaces.Catalog.Tax;
-using Grand.Business.Core.Interfaces.Catalog.Directory;
-using Grand.Business.Core.Interfaces.Catalog.Categories;
-using Grand.Business.Core.Interfaces.Catalog.Brands;
-using Grand.Business.Core.Interfaces.Catalog.Collections;
-using Grand.Infrastructure.TypeSearch;
 
-namespace Grand.Business.Catalog.Services.ExportImport.Tests
+namespace Grand.Business.Catalog.Tests.Services.ExportImport
 {
     [TestClass()]
     public class ProductImportDataObjectTests
@@ -80,8 +81,8 @@ namespace Grand.Business.Catalog.Services.ExportImport.Tests
             _workContextMock.Setup(c => c.CurrentCustomer).Returns(() => new Customer());
 
             _mediatorMock = new Mock<IMediator>();
-            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object);
-            _productService = new ProductService(_cacheBase, _repository, _workContextMock.Object, _mediatorMock.Object, new AclService());
+            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object, new CacheConfig(){ DefaultCacheTimeMinutes = 1});
+            _productService = new ProductService(_cacheBase, _repository, _workContextMock.Object, _mediatorMock.Object, new AclService(new AccessControlConfig()));
 
             _productImportDataObject = new ProductImportDataObject
                 (_productService, _pictureServiceMock.Object, _productLayoutServiceMock.Object, _deliveryDateServiceMock.Object,

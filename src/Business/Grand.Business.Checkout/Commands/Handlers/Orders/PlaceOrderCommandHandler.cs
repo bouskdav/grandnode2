@@ -38,7 +38,6 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
     public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, PlaceOrderResult>
     {
         private readonly IOrderService _orderService;
-        private readonly ITranslationService _translationService;
         private readonly ILanguageService _languageService;
         private readonly IProductService _productService;
         private readonly IInventoryManageService _inventoryManageService;
@@ -47,7 +46,6 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
         private readonly ILogger _logger;
         private readonly IOrderCalculationService _orderTotalCalculationService;
         private readonly IPricingService _pricingService;
-        private readonly IPriceFormatter _priceFormatter;
         private readonly IProductAttributeFormatter _productAttributeFormatter;
         private readonly IGiftVoucherService _giftVoucherService;
         private readonly ICheckoutAttributeFormatter _checkoutAttributeFormatter;
@@ -75,7 +73,6 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
 
         public PlaceOrderCommandHandler(
             IOrderService orderService,
-            ITranslationService translationService,
             ILanguageService languageService,
             IProductService productService,
             IInventoryManageService inventoryManageService,
@@ -84,7 +81,6 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
             ILogger logger,
             IOrderCalculationService orderTotalCalculationService,
             IPricingService priceCalculationService,
-            IPriceFormatter priceFormatter,
             IProductAttributeFormatter productAttributeFormatter,
             IGiftVoucherService giftVoucherService,
             ICheckoutAttributeFormatter checkoutAttributeFormatter,
@@ -111,7 +107,6 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
             TaxSettings taxSettings)
         {
             _orderService = orderService;
-            _translationService = translationService;
             _languageService = languageService;
             _productService = productService;
             _inventoryManageService = inventoryManageService;
@@ -120,7 +115,6 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
             _logger = logger;
             _orderTotalCalculationService = orderTotalCalculationService;
             _pricingService = priceCalculationService;
-            _priceFormatter = priceFormatter;
             _productAttributeFormatter = productAttributeFormatter;
             _giftVoucherService = giftVoucherService;
             _checkoutAttributeFormatter = checkoutAttributeFormatter;
@@ -206,7 +200,7 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                 {
                     await _paymentTransactionService.SetError(processPayment.paymentTransaction.Id, processPayment.paymentResult.Errors.ToList());
                     foreach (var paymentError in processPayment.paymentResult.Errors)
-                        result.AddError(string.Format(_translationService.GetResource("Checkout.PaymentError"), paymentError));
+                        result.AddError(paymentError);
                 }
             }
             catch (Exception exc)
@@ -376,8 +370,6 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                                 }
                             }
                             break;
-                        default:
-                            break;
                     }
                 }
             }
@@ -448,16 +440,10 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                 throw new GrandException("Cart is empty");
 
             //validate the entire shopping cart
-            var warnings = await _shoppingCartValidator.GetShoppingCartWarnings(details.Cart, details.CheckoutAttributes, true);
+            var warnings = await _shoppingCartValidator.GetShoppingCartWarnings(details.Cart, details.CheckoutAttributes, true,true);
             if (warnings.Any())
             {
-                var warningsSb = new StringBuilder();
-                foreach (var warning in warnings)
-                {
-                    warningsSb.Append(warning);
-                    warningsSb.Append(';');
-                }
-                throw new GrandException(warningsSb.ToString());
+                throw new GrandException(string.Join(", ", warnings));
             }
 
             //validate individual cart items
@@ -481,20 +467,6 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                 details.RecurringCycleLength = product.RecurringCycleLength;
                 details.RecurringCyclePeriodId = product.RecurringCyclePeriodId;
                 details.RecurringTotalCycles = product.RecurringTotalCycles;
-            }
-
-            //min totals validation
-            var minOrderSubtotalAmountOk = await _mediator.Send(new ValidateMinShoppingCartSubtotalAmountCommand() { Customer = _workContext.CurrentCustomer, Cart = details.Cart });
-            if (!minOrderSubtotalAmountOk)
-            {
-                var minOrderSubtotalAmount = await _currencyService.ConvertFromPrimaryStoreCurrency(_orderSettings.MinOrderSubtotalAmount, _workContext.WorkingCurrency);
-                throw new GrandException(string.Format(_translationService.GetResource("Checkout.MinOrderSubtotalAmount"), _priceFormatter.FormatPrice(minOrderSubtotalAmount, false)));
-            }
-
-            var minmaxOrderTotalAmountOk = await _mediator.Send(new ValidateShoppingCartTotalAmountCommand() { Customer = details.Customer, Cart = details.Cart });
-            if (!minmaxOrderTotalAmountOk)
-            {
-                throw new GrandException(_translationService.GetResource("Checkout.MinMaxOrderTotalAmount"));
             }
 
             //tax display type
@@ -638,15 +610,8 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
             {
                 details.AppliedDiscounts.Add(disc);
             }
-
-            //attributes
             var attributeDescription = await _productAttributeFormatter.FormatAttributes(product, sc.Attributes, details.Customer);
-
-            if (string.IsNullOrEmpty(attributeDescription) && sc.ShoppingCartTypeId == ShoppingCartType.Auctions)
-                attributeDescription = _translationService.GetResource("ShoppingCart.AuctionWonOn") + " " + product.AvailableEndDateTimeUtc;
-
             var itemWeight = await GetShoppingCartItemWeight(sc);
-
             var warehouseId = !string.IsNullOrEmpty(sc.WarehouseId) ? sc.WarehouseId : _workContext.CurrentStore.DefaultWarehouseId;
             if (!product.UseMultipleWarehouses && string.IsNullOrEmpty(warehouseId))
             {
@@ -694,26 +659,7 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                 cId = sc.cId
             };
 
-            var reservationInfo = "";
-            if (product.ProductTypeId == ProductType.Reservation)
-            {
-                if (sc.RentalEndDateUtc == default(DateTime) || sc.RentalEndDateUtc == null)
-                {
-                    reservationInfo = sc.RentalStartDateUtc.ToString();
-                }
-                else
-                {
-                    reservationInfo = sc.RentalStartDateUtc + " - " + sc.RentalEndDateUtc;
-                }
-                if (!string.IsNullOrEmpty(sc.Parameter))
-                {
-                    reservationInfo += "<br>" + string.Format(_translationService.GetResource("ShoppingCart.Reservation.Option"), sc.Parameter);
-                }
-                if (!string.IsNullOrEmpty(sc.Duration))
-                {
-                    reservationInfo += "<br>" + _translationService.GetResource("Products.Duration") + ": " + sc.Duration;
-                }
-            }
+            var reservationInfo = ReservationInfo(sc, product);
 
             if (string.IsNullOrEmpty(reservationInfo)) return orderItem;
             if (!string.IsNullOrEmpty(orderItem.AttributeDescription))
@@ -725,6 +671,34 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                 orderItem.AttributeDescription = reservationInfo;
             }
             return orderItem;
+        }
+
+        private static string ReservationInfo(ShoppingCartItem sc, Product product)
+        {
+            var reservationInfo = "";
+            if (product.ProductTypeId == ProductType.Reservation)
+            {
+                if (sc.RentalEndDateUtc == default(DateTime) || sc.RentalEndDateUtc == null)
+                {
+                    reservationInfo = sc.RentalStartDateUtc.ToString();
+                }
+                else
+                {
+                    reservationInfo = sc.RentalStartDateUtc + " - " + sc.RentalEndDateUtc;
+                }
+
+                if (!string.IsNullOrEmpty(sc.Parameter))
+                {
+                    reservationInfo += "<br>" + sc.Parameter;
+                }
+
+                if (!string.IsNullOrEmpty(sc.Duration))
+                {
+                    reservationInfo += "<br>" + sc.Duration;
+                }
+            }
+
+            return reservationInfo;
         }
 
         protected virtual async Task GenerateGiftVoucher(PlaceOrderContainer details, ShoppingCartItem sc, Order order, OrderItem orderItem, Product product)
@@ -855,7 +829,7 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                     ProductId = product.Id,
                     StoreId = order.StoreId,
                     Win = true,
-                    Bin = true,
+                    Bin = true
                 });
             }
             if (product.ProductTypeId == ProductType.Auction && _orderSettings.UnpublishAuctionProduct)
@@ -981,7 +955,7 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                 RecurringCycleLength = details.RecurringCycleLength,
                 RecurringCyclePeriodId = details.RecurringCyclePeriodId,
                 RecurringTotalCycles = details.RecurringTotalCycles,
-                CreatedOnUtc = DateTime.UtcNow,
+                CreatedOnUtc = DateTime.UtcNow
             };
 
             foreach (var item in details.Taxes)
@@ -1083,7 +1057,7 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                             $"Order placed by a store owner ('{originalCustomerIfImpersonated.Email}'. ID = {originalCustomerIfImpersonated.Id}) impersonating the customer.",
                         DisplayToCustomer = false,
                         CreatedOnUtc = DateTime.UtcNow,
-                        OrderId = order.Id,
+                        OrderId = order.Id
                     });
                 }
                 else
@@ -1092,7 +1066,7 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                         Note = "Order placed",
                         DisplayToCustomer = false,
                         CreatedOnUtc = DateTime.UtcNow,
-                        OrderId = order.Id,
+                        OrderId = order.Id
 
                     });
                 }

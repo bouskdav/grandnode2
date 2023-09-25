@@ -1,5 +1,4 @@
-﻿using Grand.Business.Core.Interfaces.System.Installation;
-using Grand.Domain.Pages;
+﻿using Grand.Domain.Pages;
 using Grand.Domain.Seo;
 
 namespace Grand.Business.System.Services.Installation
@@ -161,7 +160,7 @@ namespace Grand.Business.System.Services.Installation
                                            Body = "<p>Knowledgebase homepage. You can edit this in the admin site.</p>",
                                            PageLayoutId = defaultPageLayout.Id,
                                            Published = true
-                                       },
+                                       }
                                };
             await _pageRepository.InsertAsync(pages);
 

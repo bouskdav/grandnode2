@@ -4,11 +4,9 @@ using Grand.Infrastructure;
 using Grand.Infrastructure.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using System.Globalization;
 
 namespace Grand.Web.Common.Startup
 {
@@ -108,22 +106,7 @@ namespace Grand.Web.Common.Startup
             {
                 application.UseHtmlMinification();
             }
-
-            //use request localization
-            if (appConfig.UseRequestLocalization)
-            {
-                var supportedCultures = appConfig.SupportedCultures.Select(culture => new CultureInfo(culture)).ToList();
-                application.UseRequestLocalization(new RequestLocalizationOptions
-                {
-                    DefaultRequestCulture = new RequestCulture(appConfig.DefaultRequestCulture),
-                    SupportedCultures = supportedCultures,
-                    SupportedUICultures = supportedCultures
-                });
-            }
-            else
-                //use default request localization
-                application.UseRequestLocalization();
-
+            
             //use static files feature
             application.UseGrandStaticFiles(appConfig);
 

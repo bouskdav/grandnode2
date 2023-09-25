@@ -229,26 +229,7 @@ namespace Grand.Domain.Data.LiteDb
                     entity[GetName(expression)] = bsonLongValue;
                     _database.GetCollection(typeof(T).Name).Update(entity);
                     break;
-                default:
-                    break;
             }
-
-            //if (typeof(U) == typeof(int))
-            //{
-            //    var rawValue = Convert.ToInt32(entity[GetName(expression)].RawValue);
-            //    var inc = Convert.ToInt32(value);
-            //    var bsonValue = BsonMapper.Global.Serialize<int>(rawValue + inc);
-            //    entity[GetName(expression)] = bsonValue;
-            //    _database.GetCollection(typeof(T).Name).Update(entity);
-            //}
-            //if (typeof(U) == typeof(long))
-            //{
-            //    var rawValue = Convert.ToInt64(entity[GetName(expression)].RawValue);
-            //    var inc = Convert.ToInt64(value);
-            //    var bsonValue = BsonMapper.Global.Serialize<long>(rawValue + inc);
-            //    entity[GetName(expression)] = bsonValue;
-            //    _database.GetCollection(typeof(T).Name).Update(entity);
-            //}
 
             return Task.CompletedTask;
         }
@@ -290,7 +271,7 @@ namespace Grand.Domain.Data.LiteDb
                 var propertyInfo = entity?.GetType().GetProperty(name,
                     BindingFlags.Public | BindingFlags.Instance);
 
-                propertyInfo.SetValue(entity, item.Value);
+                propertyInfo?.SetValue(entity, item.Value);
             }
             _collection.Update(entity);
             return Task.CompletedTask;
@@ -389,11 +370,11 @@ namespace Grand.Domain.Data.LiteDb
                     var propertyField = position.GetType().GetProperty(item.Name,
                         BindingFlags.Public | BindingFlags.Instance);
 
-                    propertyField.SetValue(position, item.GetValue(value));
+                    propertyField?.SetValue(position, item.GetValue(value));
                 }
 
-                var updatelist = BsonMapper.Global.Serialize<IList<U>>(list);
-                entity[fieldName] = updatelist;
+                var updateList = BsonMapper.Global.Serialize<IList<U>>(list);
+                entity[fieldName] = updateList;
                 collection.Update(entity);
             }
             return Task.CompletedTask;
@@ -536,7 +517,7 @@ namespace Grand.Domain.Data.LiteDb
             var fieldName = ((MemberExpression)field.Body).Member.Name;
             if (string.IsNullOrEmpty(id))
             {
-                var entities = collection.Find(Query.EQ($"{fieldName}[*] ANY", element.ToString())).ToList();
+                var entities = collection.Find(Query.EQ($"{fieldName}[*] ANY", element)).ToList();
                 foreach (var entity in entities)
                 {
                     UpdateEntity(entity);
@@ -681,20 +662,21 @@ namespace Grand.Domain.Data.LiteDb
 
             MemberExpression expr = null;
 
-            if (Field.Body is MemberExpression expression)
+            switch (Field.Body)
             {
-                expr = expression;
-            }
-            else if (Field.Body is UnaryExpression)
-            {
-                expr = (MemberExpression)((UnaryExpression)Field.Body).Operand;
-            }
-            else
-            {
-                const string Format = "Expression '{0}' not supported.";
-                var message = string.Format(Format, Field);
+                case MemberExpression expression:
+                    expr = expression;
+                    break;
+                case UnaryExpression expression:
+                    expr = (MemberExpression)expression.Operand;
+                    break;
+                default:
+                {
+                    const string format = "Expression '{0}' not supported.";
+                    var message = string.Format(format, Field);
 
-                throw new ArgumentException(message, "Field");
+                    throw new ArgumentException(message, "Field");
+                }
             }
 
             return expr.Member.Name;

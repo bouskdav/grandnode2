@@ -1,6 +1,5 @@
-﻿using Grand.Business.Common.Services.Security;
+﻿using Grand.Business.Catalog.Services.Products;
 using Grand.Business.Core.Interfaces.Common.Localization;
-using Grand.Business.Core.Interfaces.Common.Security;
 using Grand.Data.Tests.MongoDb;
 using Grand.Domain.Catalog;
 using Grand.Domain.Customers;
@@ -8,13 +7,14 @@ using Grand.Domain.Data;
 using Grand.Domain.Shipping;
 using Grand.Infrastructure;
 using Grand.Infrastructure.Caching;
+using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Tests.Caching;
 using Grand.SharedKernel.Extensions;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Grand.Business.Catalog.Services.Products.Tests
+namespace Grand.Business.Catalog.Tests.Services.Products
 {
 
     [TestClass()]
@@ -45,8 +45,8 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             _workContextMock.Setup(c => c.CurrentCustomer).Returns(() => new Customer());
             _mediatorMock = new Mock<IMediator>();
             _settings = new CatalogSettings();
-            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object);
-            _stockQuantityService = new StockQuantityService(_translationService.Object);
+            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object, new CacheConfig(){ DefaultCacheTimeMinutes = 1});
+            _stockQuantityService = new StockQuantityService();
             _inventoryManageService = new InventoryManageService(_repository, _repositoryInventoryJournal, _stockQuantityService, _cacheBase, _mediatorMock.Object, _settings);
         }
 
@@ -58,7 +58,7 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             //Arrange
             var product = new Product() {
                 ManageInventoryMethodId = ManageInventoryMethod.ManageStock,
-                ReservedQuantity = 5,
+                ReservedQuantity = 5
             };
             await _repository.InsertAsync(product);
             //Act
@@ -74,7 +74,7 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             //Arrange
             var product = new Product() {
                 ManageInventoryMethodId = ManageInventoryMethod.ManageStock,
-                ReservedQuantity = 10,
+                ReservedQuantity = 10
             };
             await _repository.InsertAsync(product);
             //Act
@@ -91,7 +91,7 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             var product = new Product() {
                 ManageInventoryMethodId = ManageInventoryMethod.ManageStock,
                 StockQuantity = 10,
-                ReservedQuantity = 10,
+                ReservedQuantity = 10
             };
             await _repository.InsertAsync(product);
 
@@ -113,7 +113,7 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             var product = new Product() {
                 ManageInventoryMethodId = ManageInventoryMethod.ManageStock,
                 StockQuantity = 10,
-                ReservedQuantity = 10,
+                ReservedQuantity = 10
             };
             await _repository.InsertAsync(product);
 
@@ -138,7 +138,7 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             var product = new Product() {
                 ManageInventoryMethodId = ManageInventoryMethod.ManageStock,
                 StockQuantity = 0,
-                ReservedQuantity = 0,
+                ReservedQuantity = 0
             };
             await _repository.InsertAsync(product);
 

@@ -1,5 +1,4 @@
-﻿using Grand.Business.Core.Interfaces.System.Installation;
-using Grand.Domain.Pages;
+﻿using Grand.Domain.Pages;
 
 namespace Grand.Business.System.Services.Installation
 {
@@ -14,7 +13,7 @@ namespace Grand.Business.System.Services.Installation
                                            Name = "Default layout",
                                            ViewPath = "PageDetails",
                                            DisplayOrder = 1
-                                       },
+                                       }
                                };
             await _pageLayoutRepository.InsertAsync(pageLayouts);
         }

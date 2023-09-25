@@ -1,14 +1,16 @@
-﻿using Grand.Data.Tests.MongoDb;
+﻿using Grand.Business.Common.Services.Seo;
+using Grand.Data.Tests.MongoDb;
 using Grand.Domain.Catalog;
 using Grand.Domain.Data;
 using Grand.Domain.Seo;
 using Grand.Infrastructure.Caching;
+using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Tests.Caching;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Grand.Business.Common.Services.Seo.Tests
+namespace Grand.Business.Common.Tests.Services.Seo
 {
     [TestClass()]
     public class SlugServiceTests
@@ -25,8 +27,8 @@ namespace Grand.Business.Common.Services.Seo.Tests
             _repository = new MongoDBRepositoryTest<EntityUrl>();
 
             _mediatorMock = new Mock<IMediator>();
-            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object);
-            _slugService = new SlugService(_cacheBase, _repository, new Infrastructure.Configuration.PerformanceConfig());
+            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object, new CacheConfig(){ DefaultCacheTimeMinutes = 1});
+            _slugService = new SlugService(_cacheBase, _repository);
         }
 
         [TestMethod()]

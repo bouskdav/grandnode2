@@ -2,7 +2,6 @@
 using Grand.Business.Core.Extensions;
 using Grand.Business.Core.Interfaces.Common.Directory;
 using Grand.Business.Core.Interfaces.Common.Localization;
-using Grand.Business.Core.Interfaces.Common.Stores;
 using Grand.Business.Core.Utilities.Common.Security;
 using Grand.Business.Core.Interfaces.Marketing.Courses;
 using Grand.Web.Common.DataSource;
@@ -12,6 +11,7 @@ using Grand.Web.Common.Security.Authorization;
 using Grand.Domain.Courses;
 using Grand.Infrastructure;
 using Grand.Web.Admin.Extensions;
+using Grand.Web.Admin.Extensions.Mapping;
 using Grand.Web.Admin.Interfaces;
 using Grand.Web.Admin.Models.Courses;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +19,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Grand.Web.Admin.Controllers
 {
     [PermissionAuthorize(PermissionSystemName.Courses)]
-    public partial class CourseController : BaseAdminController
+    public class CourseController : BaseAdminController
     {
 
         private readonly ITranslationService _translationService;
@@ -29,14 +29,19 @@ namespace Grand.Web.Admin.Controllers
         private readonly ICourseLessonService _courseLessonService;
         private readonly ICourseViewModelService _courseViewModelService;
         private readonly IWorkContext _workContext;
-        private readonly IStoreService _storeService;
         private readonly ILanguageService _languageService;
         private readonly IGroupService _groupService;
 
-        public CourseController(ITranslationService translationService, ICourseLevelService courseLevelService, ICourseService courseService,
-            ICourseSubjectService courseSubjectService, ICourseLessonService courseLessonService,
-            ICourseViewModelService courseViewModelService, IWorkContext workContext, IStoreService storeService,
-            ILanguageService languageService, IGroupService groupService)
+        public CourseController(
+            ITranslationService translationService, 
+            ICourseLevelService courseLevelService, 
+            ICourseService courseService,
+            ICourseSubjectService courseSubjectService, 
+            ICourseLessonService courseLessonService,
+            ICourseViewModelService courseViewModelService, 
+            IWorkContext workContext, 
+            ILanguageService languageService, 
+            IGroupService groupService)
         {
             _translationService = translationService;
             _courseLevelService = courseLevelService;
@@ -45,7 +50,6 @@ namespace Grand.Web.Admin.Controllers
             _courseLessonService = courseLessonService;
             _courseViewModelService = courseViewModelService;
             _workContext = workContext;
-            _storeService = storeService;
             _languageService = languageService;
             _groupService = groupService;
         }
@@ -153,7 +157,7 @@ namespace Grand.Web.Admin.Controllers
             {
                 if (await _groupService.IsStaff(_workContext.CurrentCustomer))
                 {
-                    model.Stores = new string[] { _workContext.CurrentCustomer.StaffStoreId };
+                    model.Stores = new[] { _workContext.CurrentCustomer.StaffStoreId };
                 }
 
                 var course = await _courseViewModelService.InsertCourseModel(model);
@@ -223,7 +227,7 @@ namespace Grand.Web.Admin.Controllers
             {
                 if (await _groupService.IsStaff(_workContext.CurrentCustomer))
                 {
-                    model.Stores = new string[] { _workContext.CurrentCustomer.StaffStoreId };
+                    model.Stores = new[] { _workContext.CurrentCustomer.StaffStoreId };
                 }
 
                 course = await _courseViewModelService.UpdateCourseModel(course, model);

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Grand.Web.Admin.Models.Tax
 {
-    public partial class TaxSettingsModel : BaseModel
+    public class TaxSettingsModel : BaseModel
     {
         public TaxSettingsModel()
         {
@@ -26,9 +26,6 @@ namespace Grand.Web.Admin.Models.Tax
         [GrandResourceDisplayName("Admin.Configuration.Tax.Settings.TaxDisplayType")]
         public int TaxDisplayType { get; set; }
         public SelectList TaxDisplayTypeValues { get; set; }
-
-        [GrandResourceDisplayName("Admin.Configuration.Tax.Settings.DisplayTaxSuffix")]
-        public bool DisplayTaxSuffix { get; set; }
 
         [GrandResourceDisplayName("Admin.Configuration.Tax.Settings.DisplayTaxRates")]
         public bool DisplayTaxRates { get; set; }

@@ -5,7 +5,6 @@ using Grand.Business.Core.Interfaces.Messages;
 using Grand.Business.Core.Interfaces.Storage;
 using Grand.Domain.Data;
 using Grand.Domain.Media;
-using Grand.Infrastructure;
 using Grand.Infrastructure.Caching;
 using Grand.Infrastructure.Configuration;
 using MediatR;
@@ -30,7 +29,6 @@ namespace Grand.Business.Storage.Services
         public AzurePictureService(IRepository<Picture> pictureRepository,
             ILogger logger,
             IMediator mediator,
-            IWorkContext workContext,
             ICacheBase cacheBase,
             IMediaFileStore mediaFileStore,
             MediaSettings mediaSettings,
@@ -41,7 +39,6 @@ namespace Grand.Business.Storage.Services
             : base(pictureRepository,
                 logger,
                 mediator,
-                workContext,
                 cacheBase,
                 mediaFileStore,
                 mediaSettings,

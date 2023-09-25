@@ -1,17 +1,13 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Grand.Business.Catalog.Queries.Handlers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Grand.Domain.Data;
-using Grand.Domain.Catalog;
-using Grand.Data.Tests.MongoDb;
+﻿using Grand.Business.Catalog.Queries.Handlers;
 using Grand.Business.Core.Interfaces.Catalog.Products;
+using Grand.Data.Tests.MongoDb;
+using Grand.Domain.Catalog;
+using Grand.Domain.Data;
+using Grand.Infrastructure.Configuration;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Grand.Business.Catalog.Queries.Handlers.Tests
+namespace Grand.Business.Catalog.Tests.Queries.Handlers
 {
     [TestClass()]
     public class GetSearchProductsQueryHandlerTests
@@ -22,7 +18,7 @@ namespace Grand.Business.Catalog.Queries.Handlers.Tests
         public void Init()
         {
             _repository = new MongoDBRepositoryTest<Product>();
-            handler = new GetSearchProductsQueryHandler(_repository, new Mock<ISpecificationAttributeService>().Object, new CatalogSettings() { IgnoreFilterableSpecAttributeOption = true});
+            handler = new GetSearchProductsQueryHandler(_repository, new Mock<ISpecificationAttributeService>().Object, new CatalogSettings() { IgnoreFilterableSpecAttributeOption = true}, new AccessControlConfig());
         }
 
 

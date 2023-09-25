@@ -10,6 +10,7 @@ using Grand.Business.Core.Interfaces.Customers;
 using Grand.Business.Core.Interfaces.Storage;
 using Grand.Business.Core.Utilities.Common.Security;
 using Grand.Domain.Catalog;
+using Grand.Domain.Common;
 using Grand.Domain.Media;
 using Grand.Infrastructure;
 using Grand.Web.Commands.Models.Products;
@@ -189,10 +190,10 @@ namespace Grand.Web.Controllers
             if (product == null)
                 return new JsonResult("");
 
-            var stock = stockQuantityService.FormatStockMessage(product, model.WarehouseId, null);
+            var stock = stockQuantityService.FormatStockMessage(product, model.WarehouseId, new List<CustomAttribute>());
             return Json(new
             {
-                stockAvailability = stock
+                stockAvailability = string.Format(_translationService.GetResource(stock.resource), stock.arg0)
             });
         }
 
@@ -230,13 +231,7 @@ namespace Grand.Web.Controllers
                 });
             }
             var fileBinary = httpPostedFile.GetDownloadBits();
-
-            const string qqFileNameParameter = "qqfilename";
             var fileName = httpPostedFile.FileName;
-            if (string.IsNullOrEmpty(fileName) && form.ContainsKey(qqFileNameParameter))
-                fileName = form[qqFileNameParameter].ToString();
-            //remove path (passed in IE)
-            fileName = Path.GetFileName(fileName);
 
             var contentType = httpPostedFile.ContentType;
 
@@ -278,14 +273,15 @@ namespace Grand.Web.Controllers
 
             var download = new Download {
                 DownloadGuid = Guid.NewGuid(),
+                CustomerId = _workContext.CurrentCustomer.Id,
                 UseDownloadUrl = false,
                 DownloadUrl = "",
                 DownloadBinary = fileBinary,
                 ContentType = contentType,
-                //we store filename without extension for downloads
                 Filename = Path.GetFileNameWithoutExtension(fileName),
                 Extension = fileExtension,
-                IsNew = true
+                DownloadType = DownloadType.ProductAttribute,
+                ReferenceId = attributeId
             };
             await downloadService.InsertDownload(download);
 

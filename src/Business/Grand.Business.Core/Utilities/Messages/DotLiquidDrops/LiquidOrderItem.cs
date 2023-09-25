@@ -35,8 +35,10 @@ namespace Grand.Business.Core.Utilities.Messages.DotLiquidDrops
         }
 
         public string UnitPrice { get; set; }
+        public bool UnitPriceWithTax { get; set; }
 
         public string TotalPrice { get; set; }
+        public bool TotalPriceWithTax { get; set; }
 
         public string ProductSku { get; set; }
 
@@ -46,14 +48,14 @@ namespace Grand.Business.Core.Utilities.Messages.DotLiquidDrops
 
         public string DownloadUrl {
             get {
-                string downloadUrl = string.Format("{0}/download/getdownload/{1}", url, _orderItem.OrderItemGuid);
+                var downloadUrl = string.Format("{0}/download/getdownload/{1}", url, _orderItem.OrderItemGuid);
                 return downloadUrl;
             }
         }
 
         public string LicenseUrl {
             get {
-                string licenseUrl = string.Format("{0}/download/getlicense/{1}", url, _orderItem.OrderItemGuid);
+                var licenseUrl = string.Format("{0}/download/getlicense/{1}", url, _orderItem.OrderItemGuid);
                 return licenseUrl;
             }
         }
@@ -66,7 +68,7 @@ namespace Grand.Business.Core.Utilities.Messages.DotLiquidDrops
 
         public string ProductName {
             get {
-                string name = "";
+                var name = "";
 
                 if (_product != null)
                     name = WebUtility.HtmlEncode(_product.GetTranslation(x => x.Name, _language.Id));
@@ -77,7 +79,7 @@ namespace Grand.Business.Core.Utilities.Messages.DotLiquidDrops
 
         public string ProductSeName {
             get {
-                string name = "";
+                var name = "";
 
                 if (_product != null)
                     name = _product.GetTranslation(x => x.SeName, _language.Id);
@@ -86,7 +88,7 @@ namespace Grand.Business.Core.Utilities.Messages.DotLiquidDrops
         }
         public string ProductShortDescription {
             get {
-                string desc = "";
+                var desc = "";
 
                 if (_product != null)
                     desc = WebUtility.HtmlEncode(_product.GetTranslation(x => x.ShortDescription, _language.Id));
@@ -97,7 +99,7 @@ namespace Grand.Business.Core.Utilities.Messages.DotLiquidDrops
 
         public string ProductFullDescription {
             get {
-                string desc = "";
+                var desc = "";
 
                 if (_product != null)
                     desc = WebUtility.HtmlDecode(_product.GetTranslation(x => x.FullDescription, _language.Id));

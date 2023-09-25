@@ -1,9 +1,10 @@
 ﻿using Grand.Business.Core.Interfaces.Common.Directory;
-using Grand.Infrastructure.Mapper;
 using Grand.Domain.News;
+using Grand.Infrastructure.Mapper;
 using Grand.Web.Admin.Models.News;
+using Grand.Web.Common.Extensions;
 
-namespace Grand.Web.Admin.Extensions
+namespace Grand.Web.Admin.Extensions.Mapping
 {
     public static class NewsItemMappingExtensions
     {

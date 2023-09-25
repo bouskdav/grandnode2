@@ -8,16 +8,16 @@ using Grand.Business.Core.Interfaces.Messages;
 using Grand.Infrastructure;
 using Grand.Domain.Localization;
 using Grand.Domain.Orders;
-using Grand.Web.Admin.Extensions;
 using Grand.Web.Admin.Interfaces;
 using Grand.Web.Admin.Models.Orders;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Http;
 using Grand.Business.Core.Interfaces.Common.Stores;
+using Grand.Web.Admin.Extensions.Mapping;
 
 namespace Grand.Web.Admin.Services
 {
-    public partial class GiftVoucherViewModelService : IGiftVoucherViewModelService
+    public class GiftVoucherViewModelService : IGiftVoucherViewModelService
     {
         #region Fields
 
@@ -72,11 +72,13 @@ namespace Grand.Web.Admin.Services
             model ??= new GiftVoucherModel();
 
             foreach (var currency in await _currencyService.GetAllCurrencies())
-                model.AvailableCurrencies.Add(new SelectListItem { Text = currency.Name, Value = currency.CurrencyCode });
+                model.AvailableCurrencies.Add(
+                    new SelectListItem { Text = currency.Name, Value = currency.CurrencyCode });
 
-            model.AvailableStores.Add(new SelectListItem { Text = _translationService.GetResource("Admin.Common.All"), Value = "" });
-            foreach (var s in (await _storeService.GetAllStores()))
-                model.AvailableStores.Add(new SelectListItem { Text = s.Shortcut, Value = s.Id.ToString() });
+            model.AvailableStores.Add(new SelectListItem
+                { Text = _translationService.GetResource("Admin.Common.All"), Value = "" });
+            foreach (var s in await _storeService.GetAllStores())
+                model.AvailableStores.Add(new SelectListItem { Text = s.Shortcut, Value = s.Id });
 
             return model;
         }
@@ -84,31 +86,36 @@ namespace Grand.Web.Admin.Services
         public virtual GiftVoucherListModel PrepareGiftVoucherListModel()
         {
             var model = new GiftVoucherListModel();
-            model.ActivatedList.Add(new SelectListItem
-            {
+            model.ActivatedList.Add(new SelectListItem {
                 Value = "",
                 Text = _translationService.GetResource("Admin.GiftVouchers.List.Activated.All")
             });
-            model.ActivatedList.Add(new SelectListItem
-            {
+            model.ActivatedList.Add(new SelectListItem {
                 Value = "1",
                 Text = _translationService.GetResource("Admin.GiftVouchers.List.Activated.ActivatedOnly")
             });
-            model.ActivatedList.Add(new SelectListItem
-            {
+            model.ActivatedList.Add(new SelectListItem {
                 Value = "2",
                 Text = _translationService.GetResource("Admin.GiftVouchers.List.Activated.DeactivatedOnly")
             });
             return model;
         }
-        public virtual async Task<(IEnumerable<GiftVoucherModel> giftVoucherModels, int totalCount)> PrepareGiftVoucherModel(GiftVoucherListModel model, int pageIndex, int pageSize)
+
+        public virtual async Task<(IEnumerable<GiftVoucherModel> giftVoucherModels, int totalCount)>
+            PrepareGiftVoucherModel(GiftVoucherListModel model, int pageIndex, int pageSize)
         {
             bool? isGiftVoucherActivated = null;
-            if (model.ActivatedId == 1)
-                isGiftVoucherActivated = true;
-            else if (model.ActivatedId == 2)
-                isGiftVoucherActivated = false;
-            var giftVouchers = await _giftVoucherService.GetAllGiftVouchers(isGiftVoucherActivated: isGiftVoucherActivated,
+            switch (model.ActivatedId)
+            {
+                case 1:
+                    isGiftVoucherActivated = true;
+                    break;
+                case 2:
+                    isGiftVoucherActivated = false;
+                    break;
+            }
+            var giftVouchers = await _giftVoucherService.GetAllGiftVouchers(
+                isGiftVoucherActivated: isGiftVoucherActivated,
                 giftVoucherCouponCode: model.CouponCode,
                 recipientName: model.RecipientName,
                 pageIndex: pageIndex - 1, pageSize: pageSize);
@@ -117,12 +124,11 @@ namespace Grand.Web.Admin.Services
             foreach (var item in giftVouchers)
             {
                 var gift = item.ToModel(_dateTimeService);
-                var currency = await _currencyService.GetCurrencyByCode(item.CurrencyCode);
-                if (currency == null)
-                    currency = await _currencyService.GetPrimaryStoreCurrency();
+                var currency = await _currencyService.GetCurrencyByCode(item.CurrencyCode) ??
+                               await _currencyService.GetPrimaryStoreCurrency();
 
-                gift.RemainingAmountStr = _priceFormatter.FormatPrice(item.GetGiftVoucherRemainingAmount(), currency, _workContext.WorkingLanguage, true, false);
-                gift.AmountStr = _priceFormatter.FormatPrice(item.Amount, currency, _workContext.WorkingLanguage, true, false);
+                gift.RemainingAmountStr = _priceFormatter.FormatPrice(item.GetGiftVoucherRemainingAmount(), currency);
+                gift.AmountStr = _priceFormatter.FormatPrice(item.Amount, currency);
                 gift.CreatedOn = _dateTimeService.ConvertToUserTime(item.CreatedOnUtc, DateTimeKind.Utc);
 
                 giftvouchers.Add(gift);
@@ -130,6 +136,7 @@ namespace Grand.Web.Admin.Services
 
             return (giftvouchers, giftVouchers.TotalCount);
         }
+
         public virtual async Task<GiftVoucher> InsertGiftVoucherModel(GiftVoucherModel model)
         {
             var giftVoucher = model.ToEntity(_dateTimeService);
@@ -142,33 +149,37 @@ namespace Grand.Web.Admin.Services
                 _translationService.GetResource("ActivityLog.AddNewGiftVoucher"), giftVoucher.Code);
             return giftVoucher;
         }
-        public virtual async Task<Order> FillGiftVoucherModel(GiftVoucher giftVoucher, GiftVoucherModel model)
+
+        public virtual async Task<Order> GetOrderFromGiftVoucher(GiftVoucher giftVoucher)
         {
             Order order = null;
             if (giftVoucher.PurchasedWithOrderItem != null)
                 order = await _orderService.GetOrderByOrderItemId(giftVoucher.PurchasedWithOrderItem.Id);
 
-            var currency = await _currencyService.GetCurrencyByCode(giftVoucher.CurrencyCode);
-            if (currency == null)
-                currency = await _currencyService.GetPrimaryStoreCurrency();
-
-            model.PurchasedWithOrderId = giftVoucher.PurchasedWithOrderItem != null ? order.Id : null;
-            model.RemainingAmountStr = _priceFormatter.FormatPrice(giftVoucher.GetGiftVoucherRemainingAmount(), currency, _workContext.WorkingLanguage, true, false);
-            model.AmountStr = _priceFormatter.FormatPrice(giftVoucher.Amount, currency, _workContext.WorkingLanguage, true, false);
-            model.CreatedOn = _dateTimeService.ConvertToUserTime(giftVoucher.CreatedOnUtc, DateTimeKind.Utc);
-            model.CurrencyCode = giftVoucher.CurrencyCode;
             return order;
         }
-        public virtual async Task NotifyRecipient(GiftVoucher giftVoucher, GiftVoucherModel model)
+
+        public virtual async Task<GiftVoucherModel> FillGiftVoucherModel(GiftVoucher giftVoucher, GiftVoucherModel model)
         {
-            model = giftVoucher.ToModel(_dateTimeService);
-            var order = await FillGiftVoucherModel(giftVoucher, model);
+            var currency = await _currencyService.GetCurrencyByCode(giftVoucher.CurrencyCode) ??
+                           await _currencyService.GetPrimaryStoreCurrency();
+            
+            model.PurchasedWithOrderId = giftVoucher.PurchasedWithOrderItem != null ? (await GetOrderFromGiftVoucher(giftVoucher))?.Id : null;
+            model.RemainingAmountStr = _priceFormatter.FormatPrice(giftVoucher.GetGiftVoucherRemainingAmount(), currency);
+            model.AmountStr = _priceFormatter.FormatPrice(giftVoucher.Amount, currency);
+            model.CreatedOn = _dateTimeService.ConvertToUserTime(giftVoucher.CreatedOnUtc, DateTimeKind.Utc);
+            model.CurrencyCode = giftVoucher.CurrencyCode;
+            return model;
+        }
+
+        public virtual async Task NotifyRecipient(GiftVoucher giftVoucher)
+        {
+            var order = await GetOrderFromGiftVoucher(giftVoucher);
             var languageId = "";
             if (order != null)
             {
-                var customerLang = await _languageService.GetLanguageById(order.CustomerLanguageId);
-                if (customerLang == null)
-                    customerLang = (await _languageService.GetAllLanguages()).FirstOrDefault();
+                var customerLang = await _languageService.GetLanguageById(order.CustomerLanguageId) ??
+                                   (await _languageService.GetAllLanguages()).FirstOrDefault();
                 if (customerLang != null)
                     languageId = customerLang.Id;
             }
@@ -176,18 +187,17 @@ namespace Grand.Web.Admin.Services
             {
                 languageId = _languageSettings.DefaultAdminLanguageId;
             }
-            int queuedEmailId = await _messageProviderService.SendGiftVoucherMessage(giftVoucher, order, languageId);
+
+            var queuedEmailId = await _messageProviderService.SendGiftVoucherMessage(giftVoucher, order, languageId);
             if (queuedEmailId > 0)
             {
                 giftVoucher.IsRecipientNotified = true;
                 await _giftVoucherService.UpdateGiftVoucher(giftVoucher);
-                model.IsRecipientNotified = true;
             }
-
         }
+
         public virtual async Task<GiftVoucher> UpdateGiftVoucherModel(GiftVoucher giftVoucher, GiftVoucherModel model)
         {
-
             giftVoucher = model.ToEntity(giftVoucher, _dateTimeService);
             await _giftVoucherService.UpdateGiftVoucher(giftVoucher);
             //activity log
@@ -197,6 +207,7 @@ namespace Grand.Web.Admin.Services
 
             return giftVoucher;
         }
+
         public virtual async Task DeleteGiftVoucher(GiftVoucher giftVoucher)
         {
             await _giftVoucherService.DeleteGiftVoucher(giftVoucher);
@@ -205,6 +216,7 @@ namespace Grand.Web.Admin.Services
                 _workContext.CurrentCustomer, _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString(),
                 _translationService.GetResource("ActivityLog.DeleteGiftVoucher"), giftVoucher.Code);
         }
+
         public virtual async Task<GiftVoucherModel> PrepareGiftVoucherModel(GiftVoucher giftVoucher)
         {
             var model = giftVoucher.ToModel(_dateTimeService);
@@ -213,39 +225,39 @@ namespace Grand.Web.Admin.Services
             if (giftVoucher.PurchasedWithOrderItem != null)
                 order = await _orderService.GetOrderByOrderItemId(giftVoucher.PurchasedWithOrderItem.Id);
 
-            var currency = await _currencyService.GetCurrencyByCode(giftVoucher.CurrencyCode);
-            if (currency == null)
-                currency = await _currencyService.GetPrimaryStoreCurrency();
+            var currency = await _currencyService.GetCurrencyByCode(giftVoucher.CurrencyCode) ??
+                           await _currencyService.GetPrimaryStoreCurrency();
 
             model.PurchasedWithOrderId = giftVoucher.PurchasedWithOrderItem != null ? order?.Id : null;
             model.PurchasedWithOrderNumber = order?.OrderNumber ?? 0;
-            model.RemainingAmountStr = _priceFormatter.FormatPrice(giftVoucher.GetGiftVoucherRemainingAmount(), currency, _workContext.WorkingLanguage, true, false);
-            model.AmountStr = _priceFormatter.FormatPrice(giftVoucher.Amount, currency, _workContext.WorkingLanguage, true, false);
+            model.RemainingAmountStr = _priceFormatter.FormatPrice(giftVoucher.GetGiftVoucherRemainingAmount(), currency);
+            model.AmountStr = _priceFormatter.FormatPrice(giftVoucher.Amount, currency);
             model.CreatedOn = _dateTimeService.ConvertToUserTime(giftVoucher.CreatedOnUtc, DateTimeKind.Utc);
             model.CurrencyCode = giftVoucher.CurrencyCode;
             return model;
         }
-        public virtual async Task<(IEnumerable<GiftVoucherModel.GiftVoucherUsageHistoryModel> giftVoucherUsageHistoryModels, int totalCount)> PrepareGiftVoucherUsageHistoryModels(GiftVoucher giftVoucher, int pageIndex, int pageSize)
+
+        public virtual async
+            Task<(IEnumerable<GiftVoucherModel.GiftVoucherUsageHistoryModel> giftVoucherUsageHistoryModels, int
+                totalCount)> PrepareGiftVoucherUsageHistoryModels(GiftVoucher giftVoucher, int pageIndex, int pageSize)
         {
-            var currency = await _currencyService.GetCurrencyByCode(giftVoucher.CurrencyCode);
-            if (currency == null)
-                currency = await _currencyService.GetPrimaryStoreCurrency();
+            var currency = await _currencyService.GetCurrencyByCode(giftVoucher.CurrencyCode) ??
+                           await _currencyService.GetPrimaryStoreCurrency();
 
             var items = new List<GiftVoucherModel.GiftVoucherUsageHistoryModel>();
             foreach (var x in giftVoucher.GiftVoucherUsageHistory.OrderByDescending(gcuh => gcuh.CreatedOnUtc))
             {
                 var order = await _orderService.GetOrderById(x.UsedWithOrderId);
-                items.Add(new GiftVoucherModel.GiftVoucherUsageHistoryModel
-                {
+                items.Add(new GiftVoucherModel.GiftVoucherUsageHistoryModel {
                     Id = x.Id,
                     OrderId = x.UsedWithOrderId,
-                    OrderNumber = order != null ? order.OrderNumber : 0,
-                    UsedValue = _priceFormatter.FormatPrice(x.UsedValue, currency, _workContext.WorkingLanguage, true, false),
+                    OrderNumber = order?.OrderNumber ?? 0,
+                    UsedValue = _priceFormatter.FormatPrice(x.UsedValue, currency),
                     CreatedOn = _dateTimeService.ConvertToUserTime(x.CreatedOnUtc, DateTimeKind.Utc)
                 });
             }
+
             return (items.Skip((pageIndex - 1) * pageSize).Take(pageSize), items.Count);
         }
-
     }
 }

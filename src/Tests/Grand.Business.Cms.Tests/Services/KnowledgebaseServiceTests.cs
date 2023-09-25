@@ -1,15 +1,17 @@
-﻿using Grand.Data.Tests.MongoDb;
+﻿using Grand.Business.Cms.Services;
+using Grand.Data.Tests.MongoDb;
 using Grand.Domain.Customers;
 using Grand.Domain.Data;
 using Grand.Domain.Knowledgebase;
 using Grand.Infrastructure;
 using Grand.Infrastructure.Caching;
+using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Tests.Caching;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Grand.Business.Cms.Services.Tests
+namespace Grand.Business.Cms.Tests.Services
 {
     [TestClass()]
     public class KnowledgebaseServiceTests
@@ -37,9 +39,9 @@ namespace Grand.Business.Cms.Services.Tests
             _workContextMock.Setup(c => c.CurrentStore).Returns(() => new Domain.Stores.Store() { Id = "", Name = "test store" });
             _workContextMock.Setup(c => c.CurrentCustomer).Returns(() => new Customer());
 
-            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object);
+            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object, new CacheConfig(){ DefaultCacheTimeMinutes = 1});
             _knowledgebaseService = new KnowledgebaseService(_repositoryKnowledgebaseCategory, _repositoryKnowledgebaseArticle, _repositoryKnowledgebaseArticleComment, _mediatorMock.Object,
-                _workContextMock.Object, _cacheBase);
+                _workContextMock.Object, _cacheBase, new AccessControlConfig());
         }
 
         [TestMethod()]

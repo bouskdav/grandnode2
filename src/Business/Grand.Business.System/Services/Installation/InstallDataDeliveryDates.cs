@@ -1,5 +1,4 @@
-﻿using Grand.Business.Core.Interfaces.System.Installation;
-using Grand.Domain.Shipping;
+﻿using Grand.Domain.Shipping;
 
 namespace Grand.Business.System.Services.Installation
 {
@@ -23,7 +22,7 @@ namespace Grand.Business.System.Services.Installation
                                         {
                                             Name = "1 week",
                                             DisplayOrder = 10
-                                        },
+                                        }
                                 };
             await _deliveryDateRepository.InsertAsync(deliveryDates);
         }

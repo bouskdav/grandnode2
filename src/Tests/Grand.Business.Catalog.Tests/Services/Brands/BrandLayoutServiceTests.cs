@@ -1,13 +1,15 @@
-﻿using Grand.Data.Tests.MongoDb;
+﻿using Grand.Business.Catalog.Services.Brands;
+using Grand.Data.Tests.MongoDb;
 using Grand.Domain.Catalog;
 using Grand.Domain.Data;
 using Grand.Infrastructure.Caching;
+using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Tests.Caching;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Grand.Business.Catalog.Services.Brands.Tests
+namespace Grand.Business.Catalog.Tests.Services.Brands
 {
     [TestClass()]
     public class BrandLayoutServiceTests
@@ -23,7 +25,7 @@ namespace Grand.Business.Catalog.Services.Brands.Tests
             _repository = new MongoDBRepositoryTest<BrandLayout>();
             _mediatorMock = new Mock<IMediator>();
 
-            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object);
+            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object, new CacheConfig(){ DefaultCacheTimeMinutes = 1});
             _brandLayoutService = new BrandLayoutService(_repository, _cacheBase, _mediatorMock.Object);
         }
 

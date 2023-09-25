@@ -6,6 +6,7 @@ using Grand.Domain.Data;
 using Grand.Domain.Data.Mongo;
 using Grand.Infrastructure;
 using Grand.Infrastructure.Caching;
+using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Events;
 using Grand.SharedKernel.Extensions;
 using MediatR;
@@ -41,8 +42,8 @@ namespace Grand.Business.Catalog.Tests.Services.Categories
             _aclServiceMock = new Mock<IAclService>();
             _settings = new CatalogSettings();
             _categoryService = new CategoryService(_casheManagerMock.Object, _categoryRepositoryMock.Object, _workContextMock.Object,
-                 _mediatorMock.Object, _aclServiceMock.Object);
-            _productCategoryService = new ProductCategoryService(_productRepositoryMock.Object, _casheManagerMock.Object, _workContextMock.Object, _mediatorMock.Object);
+                 _mediatorMock.Object, _aclServiceMock.Object, new AccessControlConfig());
+            _productCategoryService = new ProductCategoryService(_productRepositoryMock.Object, _casheManagerMock.Object, _workContextMock.Object, _mediatorMock.Object, new AccessControlConfig());
         }
 
         [TestMethod()]
@@ -183,7 +184,7 @@ namespace Grand.Business.Catalog.Tests.Services.Categories
                 new Category(){ Id="2" ,Name="cat2",Published=true},
                 new Category(){ Id="3" ,Name="cat3",Published=true},
                 new Category(){ Id="4" ,Name="cat4",Published=true},
-                new Category(){ Id="5" ,Name="cat5",Published=true},
+                new Category(){ Id="5" ,Name="cat5",Published=true}
             };
         }
 

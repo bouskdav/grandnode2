@@ -8,7 +8,7 @@ using Grand.Web.Common.DataSource;
 using Grand.Web.Common.Filters;
 using Grand.Web.Common.Security.Authorization;
 using Grand.Domain.News;
-using Grand.Web.Admin.Extensions;
+using Grand.Web.Admin.Extensions.Mapping;
 using Grand.Web.Admin.Interfaces;
 using Grand.Web.Admin.Models.News;
 using Microsoft.AspNetCore.Mvc;
@@ -17,15 +17,15 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace Grand.Web.Admin.Controllers
 {
     [PermissionAuthorize(PermissionSystemName.News)]
-    public partial class NewsController : BaseAdminController
+    public class NewsController : BaseAdminController
     {
         #region Fields
+
         private readonly INewsViewModelService _newsViewModelService;
         private readonly INewsService _newsService;
         private readonly ILanguageService _languageService;
         private readonly ITranslationService _translationService;
         private readonly IStoreService _storeService;
-        private readonly IGroupService _groupService;
         private readonly IDateTimeService _dateTimeService;
         #endregion
 
@@ -37,7 +37,6 @@ namespace Grand.Web.Admin.Controllers
             ILanguageService languageService,
             ITranslationService translationService,
             IStoreService storeService,
-            IGroupService groupService,
             IDateTimeService dateTimeService)
         {
             _newsViewModelService = newsViewModelService;
@@ -45,7 +44,6 @@ namespace Grand.Web.Admin.Controllers
             _languageService = languageService;
             _translationService = translationService;
             _storeService = storeService;
-            _groupService = groupService;
             _dateTimeService = dateTimeService;
         }
 
@@ -61,7 +59,7 @@ namespace Grand.Web.Admin.Controllers
             //stores
             model.AvailableStores.Add(new SelectListItem { Text = _translationService.GetResource("Admin.Common.All"), Value = "" });
             foreach (var s in await _storeService.GetAllStores())
-                model.AvailableStores.Add(new SelectListItem { Text = s.Shortcut, Value = s.Id.ToString() });
+                model.AvailableStores.Add(new SelectListItem { Text = s.Shortcut, Value = s.Id });
 
             return View(model);
         }
@@ -83,11 +81,12 @@ namespace Grand.Web.Admin.Controllers
         public async Task<IActionResult> Create()
         {
             ViewBag.AllLanguages = _languageService.GetAllLanguages(true);
-            var model = new NewsItemModel();
+            var model = new NewsItemModel {
+                //default values
+                Published = true,
+                AllowComments = true
+            };
 
-            //default values
-            model.Published = true;
-            model.AllowComments = true;
             //locales
             await AddLocales(_languageService, model.Locales);
             return View(model);
@@ -201,7 +200,7 @@ namespace Grand.Web.Admin.Controllers
             var gridModel = new DataSourceResult
             {
                 Data = comments.newsCommentModels.ToList(),
-                Total = comments.totalCount,
+                Total = comments.totalCount
             };
             return Json(gridModel);
         }

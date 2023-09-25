@@ -23,12 +23,12 @@ namespace Grand.Web.Admin.Services
         private readonly IDateTimeService _dateTimeService;
         private readonly IPriceFormatter _priceFormatter;
         private readonly IOrderStatusService _orderStatusService;
-
+        private readonly ICurrencyService _currencyService;
         public CustomerReportViewModelService(IWorkContext workContext,
             ICustomerService customerService,
             ITranslationService translationService, ICustomerReportService customerReportService,
             IDateTimeService dateTimeService, IPriceFormatter priceFormatter,
-            IOrderStatusService orderStatusService)
+            IOrderStatusService orderStatusService, ICurrencyService currencyService)
         {
             _workContext = workContext;
             _customerService = customerService;
@@ -37,6 +37,7 @@ namespace Grand.Web.Admin.Services
             _dateTimeService = dateTimeService;
             _priceFormatter = priceFormatter;
             _orderStatusService = orderStatusService;
+            _currencyService = currencyService;
         }
 
         public virtual async Task<CustomerReportsModel> PrepareCustomerReportsModel()
@@ -47,7 +48,7 @@ namespace Grand.Web.Admin.Services
             };
             var status = await _orderStatusService.GetAll();
 
-            model.BestCustomersByNumberOfOrders.AvailableOrderStatuses = status.Select(x => new SelectListItem() { Value = x.StatusId.ToString(), Text = x.Name }).ToList();
+            model.BestCustomersByNumberOfOrders.AvailableOrderStatuses = status.Select(x => new SelectListItem { Value = x.StatusId.ToString(), Text = x.Name }).ToList();
 
             model.BestCustomersByNumberOfOrders.AvailableOrderStatuses.Insert(0, new SelectListItem { Text = _translationService.GetResource("Admin.Common.All"), Value = "" });
             model.BestCustomersByNumberOfOrders.AvailablePaymentStatuses = PaymentStatus.Pending.ToSelectList(_translationService, _workContext, false).ToList();
@@ -57,7 +58,7 @@ namespace Grand.Web.Admin.Services
 
             //customers by order total
             model.BestCustomersByOrderTotal = new BestCustomersReportModel {
-                AvailableOrderStatuses = status.Select(x => new SelectListItem() { Value = x.StatusId.ToString(), Text = x.Name }).ToList()
+                AvailableOrderStatuses = status.Select(x => new SelectListItem { Value = x.StatusId.ToString(), Text = x.Name }).ToList()
             };
             model.BestCustomersByOrderTotal.AvailableOrderStatuses.Insert(0, new SelectListItem { Text = _translationService.GetResource("Admin.Common.All"), Value = "" });
             model.BestCustomersByOrderTotal.AvailablePaymentStatuses = PaymentStatus.Pending.ToSelectList(_translationService, _workContext, false).ToList();
@@ -100,15 +101,15 @@ namespace Grand.Web.Admin.Services
 
         public virtual async Task<(IEnumerable<BestCustomerReportLineModel> bestCustomerReportLineModels, int totalCount)> PrepareBestCustomerReportLineModel(BestCustomersReportModel model, int orderBy, int pageIndex, int pageSize)
         {
-            DateTime? startDateValue = (model.StartDate == null) ? null
-                            : (DateTime?)_dateTimeService.ConvertToUtcTime(model.StartDate.Value, _dateTimeService.CurrentTimeZone);
+            DateTime? startDateValue = model.StartDate == null ? null
+                            : _dateTimeService.ConvertToUtcTime(model.StartDate.Value, _dateTimeService.CurrentTimeZone);
 
-            DateTime? endDateValue = (model.EndDate == null) ? null
-                            : (DateTime?)_dateTimeService.ConvertToUtcTime(model.EndDate.Value, _dateTimeService.CurrentTimeZone).AddDays(1);
+            DateTime? endDateValue = model.EndDate == null ? null
+                            : _dateTimeService.ConvertToUtcTime(model.EndDate.Value, _dateTimeService.CurrentTimeZone).AddDays(1);
 
             int? orderStatus = model.OrderStatusId > 0 ? model.OrderStatusId : null;
-            PaymentStatus? paymentStatus = model.PaymentStatusId > 0 ? (PaymentStatus?)(model.PaymentStatusId) : null;
-            ShippingStatus? shippingStatus = model.ShippingStatusId > 0 ? (ShippingStatus?)(model.ShippingStatusId) : null;
+            PaymentStatus? paymentStatus = model.PaymentStatusId > 0 ? (PaymentStatus?)model.PaymentStatusId : null;
+            ShippingStatus? shippingStatus = model.ShippingStatusId > 0 ? (ShippingStatus?)model.ShippingStatusId : null;
 
             var items = _customerReportService.GetBestCustomersReport(model.StoreId, startDateValue, endDateValue,
                 orderStatus, paymentStatus, shippingStatus, 2, pageIndex - 1, pageSize);
@@ -118,8 +119,8 @@ namespace Grand.Web.Admin.Services
             {
                 var m = new BestCustomerReportLineModel {
                     CustomerId = x.CustomerId,
-                    OrderTotal = _priceFormatter.FormatPrice(x.OrderTotal, false),
-                    OrderCount = x.OrderCount,
+                    OrderTotal = _priceFormatter.FormatPrice(x.OrderTotal, await _currencyService.GetPrimaryStoreCurrency()),
+                    OrderCount = x.OrderCount
                 };
                 var customer = await _customerService.GetCustomerById(x.CustomerId);
                 if (customer != null)

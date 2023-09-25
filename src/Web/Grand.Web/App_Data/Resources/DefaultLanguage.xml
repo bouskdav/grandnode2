@@ -340,7 +340,7 @@
 		<Value>Username is too long</Value>
 	</Resource>
 	<Resource Name="Account.EnableTwoFactorAuth" Area="Front">
-		<value>Enable Two Factor Authentication</value>
+		<Value>Enable Two Factor Authentication</Value>
 	</Resource>
 	<Resource Name="Account.Fields.AcceptPrivacyPolicy" Area="Front">
 		<Value>I accept privacy policy</Value>
@@ -575,6 +575,9 @@
 	</Resource>
 	<Resource Name="Account.Navigation" Area="Front">
 		<Value>My account</Value>
+	</Resource>
+	<Resource Name="Account.NoExists" Area="Front">
+		<Value>Account not exists</Value>
 	</Resource>
 	<Resource Name="Account.Options" Area="Front">
 		<Value>Options</Value>
@@ -4935,6 +4938,24 @@
 	<Resource Name="Admin.Configuration.Shipping.PickupPoint.Fields.Warehouses" Area="Admin">
 		<Value>Select warehouse</Value>
 	</Resource>
+	<Resource Name="admin.configuration.permissions.addnew" Area="Admin">
+		<Value>Add new permission</Value>
+	</Resource>
+	<Resource Name="admin.configuration.permissions.fields.area" Area="Admin">
+		<Value>Area</Value>
+	</Resource>
+	<Resource Name="admin.configuration.permissions.fields.category" Area="Admin">
+		<Value>Category</Value>
+	</Resource>
+	<Resource Name="admin.configuration.permissions.fields.name" Area="Admin">
+		<Value>Name</Value>
+	</Resource>
+	<Resource Name="admin.configuration.permissions.fields.systemName" Area="Admin">
+		<Value>System name</Value>
+	</Resource>
+	<Resource Name="admin.configuration.permissions.update" Area="Admin">
+		<Value>Update permission</Value>
+	</Resource>
 	<Resource Name="admin.configuration.shipping.pickuppoint.selectstore" Area="Admin">
 		<Value>Select store</Value>
 	</Resource>
@@ -5288,9 +5309,6 @@
 	</Resource>
 	<Resource Name="Admin.Configuration.Tax.Settings.DisplayTaxRates" Area="Admin">
 		<Value>Display all applied tax rates</Value>
-	</Resource>
-	<Resource Name="Admin.Configuration.Tax.Settings.DisplayTaxSuffix" Area="Admin">
-		<Value>Display tax suffix</Value>
 	</Resource>
 	<Resource Name="Admin.Configuration.Tax.Settings.EuVatAllowVatExemption" Area="Admin">
 		<Value>Allow VAT exemption</Value>
@@ -7163,21 +7181,6 @@
 	</Resource>
 	<Resource Name="Admin.Dashboard.ActivityOverview.TodayRegisteredCustomers" Area="Admin">
 		<Value>Today Registered Customers</Value>
-	</Resource>
-	<Resource Name="Admin.Dashboard.GoogleAnalytics" Area="Admin">
-		<Value>Google Analytics</Value>
-	</Resource>
-	<Resource Name="Admin.Dashboard.GoogleAnalytics.Device" Area="Admin">
-		<Value>Google Analytics - Device</Value>
-	</Resource>
-	<Resource Name="Admin.Dashboard.GoogleAnalytics.Exit" Area="Admin">
-		<Value>Google Analytics - Exit Pages</Value>
-	</Resource>
-	<Resource Name="Admin.Dashboard.GoogleAnalytics.Localization" Area="Admin">
-		<Value>Google Analytics - Localization</Value>
-	</Resource>
-	<Resource Name="Admin.Dashboard.GoogleAnalytics.Source" Area="Admin">
-		<Value>Google Analytics - All Traffic</Value>
 	</Resource>
 	<Resource Name="Admin.Dashboard.OnlineCustomerMinutes" Area="Admin">
 		<Value>in the last {0} minutes</Value>
@@ -9315,6 +9318,21 @@
 	<Resource Name="Admin.PaymentTransaction.Fields.VoidOffline" Area="Admin">
 		<Value>Void offline</Value>
 	</Resource>
+	<Resource Name="admin.permissions.fields.area.required" Area="Admin">
+		<Value>Area is required.</Value>
+	</Resource>
+	<Resource Name="admin.permissions.fields.category.required" Area="Admin">
+		<Value>Category is required.</Value>
+	</Resource>
+	<Resource Name="admin.permissions.fields.id.notexist" Area="Admin">
+		<Value>Permission not exists.</Value>
+	</Resource>
+	<Resource Name="admin.permissions.fields.name.required" Area="Admin">
+		<Value>Name is required.</Value>
+	</Resource>
+	<Resource Name="admin.permissions.fields.systemname.required" Area="Admin">
+		<Value>System name is required.</Value>
+	</Resource>
 	<Resource Name="Admin.Picture.RemovePicture" Area="Admin">
 		<Value>Remove picture</Value>
 	</Resource>
@@ -10011,6 +10029,9 @@
 	<Resource Name="Admin.Settings.Catalog.EmailAFriendEnabled" Area="Admin">
 		<Value>'Email a friend' enabled</Value>
 	</Resource>
+	<Resource Name="Admin.Settings.Catalog.FilterProductRating" Area="Admin">
+		<Value>Filtering by product rating - options (comma separator, e.g: 4.8,4.9,5)</Value>
+	</Resource>
 	<Resource Name="Admin.Settings.Catalog.General" Area="Admin">
 		<Value>General</Value>
 	</Resource>
@@ -10650,59 +10671,6 @@
 	<Resource Name="Admin.Settings.GeneralCommon.GenerateProductMetaDescription" Area="Admin">
 		<Value>If not provided, generate product META description automatically</Value>
 	</Resource>
-	<Resource Name="Admin.Settings.GeneralCommon.GoogleAnalytics" Area="Admin">
-		<Value>Google Analytics</Value>
-	</Resource>
-	<Resource Name="Admin.Settings.GeneralCommon.GoogleAnalytics.help" Area="Admin">
-		<Value>Please configure the settings: Configuration -&gt; Settings -&gt; General settings -&gt; Tab Google Analytics</Value>
-	</Resource>
-	<Resource Name="Admin.Settings.GeneralCommon.GoogleAnalytics.help2" Area="Admin">
-		<Value>An error occurred, please check logs</Value>
-	</Resource>
-	<Resource Name="Admin.Settings.GeneralCommon.GoogleAnalytics_help1" Area="Admin">
-		<Value>
-			1. Register a Google Analytics account. Keep in mind that you need to wait 24h before GA can obtain some data to display.
-		</Value>
-	</Resource>
-	<Resource Name="Admin.Settings.GeneralCommon.GoogleAnalytics_help2" Area="Admin">
-		<Value>
-			2. Go to https://console.cloud.google.com/apis/credentials &gt; select credentials for your project &gt; New Credentials &gt; Service account key &gt; download a .json file from your account, and open it with text editor.
-		</Value>
-	</Resource>
-	<Resource Name="Admin.Settings.GeneralCommon.GoogleAnalytics_help3" Area="Admin">
-		<Value>
-			3. Copy the value of "private_key" e.g. -----BEGIN PRIVATE KEY-----\n ... -----END PRIVATE KEY-----\n
-		</Value>
-	</Resource>
-	<Resource Name="Admin.Settings.GeneralCommon.GoogleAnalytics_help4" Area="Admin">
-		<Value>
-			4. Copy the value of "client_email" e.g. asymmetric-rite-000000@appspot.gserviceaccount.com
-		</Value>
-	</Resource>
-	<Resource Name="Admin.Settings.GeneralCommon.GoogleAnalytics_help5" Area="Admin">
-		<Value>
-			5. Get your view ID, https://analytics.google.com/analytics/web/ &gt; Admin &gt; View Settings &gt; View ID. e.g. 412390048
-		</Value>
-	</Resource>
-	<Resource Name="Admin.Settings.GeneralCommon.GoogleAnalytics_help6" Area="Admin">
-		<Value>
-			6. Enable Google Analytics API in your Google Cloud Platform here - https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/
-		</Value>
-	</Resource>
-	<Resource Name="Admin.Settings.GeneralCommon.GoogleAnalytics_help7" Area="Admin">
-		<Value>
-			7. The last step is to add client email to your Google Analytics account.
-		</Value>
-	</Resource>
-	<Resource Name="Admin.Settings.GeneralCommon.GoogleAnalyticsPrivateKey" Area="Admin">
-		<Value>Private Key</Value>
-	</Resource>
-	<Resource Name="Admin.Settings.GeneralCommon.GoogleAnalyticsServiceAccountEmail" Area="Admin">
-		<Value>Service AccountEmail</Value>
-	</Resource>
-	<Resource Name="Admin.Settings.GeneralCommon.GoogleAnalyticsViewID" Area="Admin">
-		<Value>ViewID</Value>
-	</Resource>
 	<Resource Name="Admin.Settings.GeneralCommon.InstagramLink" Area="Admin">
 		<Value>Instagram page URL</Value>
 	</Resource>
@@ -10978,12 +10946,6 @@
 	</Resource>
 	<Resource Name="Admin.Settings.Media.ProductThumbPictureSizeOnProductDetailsPage" Area="Admin">
 		<Value>Product thumbnail image size (product page)</Value>
-	</Resource>
-	<Resource Name="Admin.Settings.Media.StoreLocation" Area="Admin">
-		<Value>Image location (url)</Value>
-	</Resource>
-	<Resource Name="Admin.Settings.Media.StoreLocation.hint" Area="Admin">
-		<Value>This settings is only for advanced user</Value>
 	</Resource>
 	<Resource Name="Admin.Settings.Media.VendorThumbPictureSize" Area="Admin">
 		<Value>Vendor thumbnail image size</Value>
@@ -11987,6 +11949,9 @@
 	<Resource Name="Admin.System.UserApi.Password" Area="Admin">
 		<Value>Password</Value>
 	</Resource>
+	<Resource Name="Admin.System.UserApi.Password.Required" Area="Admin">
+		<Value>Password is required</Value>
+	</Resource>
 	<Resource Name="Admin.System.Warnings" Area="Admin">
 		<Value>Warnings</Value>
 	</Resource>
@@ -12572,6 +12537,9 @@
 	<Resource Name="Catalog.PageSize.PerPage" Area="Front">
 		<Value>per page</Value>
 	</Resource>
+	<Resource Name="Catalog.Rating" Area="Front">
+		<Value>Product rating</Value>
+	</Resource>
 	<Resource Name="Catalog.Selectors.Fiters" Area="Front">
 		<Value>Filters</Value>
 	</Resource>
@@ -12754,9 +12722,6 @@
 	</Resource>
 	<Resource Name="Checkout.ShippingMethod" Area="Front">
 		<Value>Shipping method</Value>
-	</Resource>
-	<Resource Name="Checkout.ShippingOptionCouldNotBeLoaded" Area="Front">
-		<Value>Shipping options could not be loaded</Value>
 	</Resource>
 	<Resource Name="Checkout.ShipToThisAddress" Area="Front">
 		<Value>Ship to this address</Value>
@@ -13237,6 +13202,9 @@
 	</Resource>
 	<Resource Name="Enums.Grand.Domain.Catalog.ProductSortingEnum.PriceDesc" Area="Common">
 		<Value>Price: High to Low</Value>
+	</Resource>
+	<Resource Name="Enums.Grand.Domain.Catalog.ProductSortingEnum.Rating" Area="Common">
+		<Value>Rating</Value>
 	</Resource>
 	<Resource Name="Enums.Grand.Domain.Catalog.ProductType.BundledProduct" Area="Common">
 		<Value>Bundled product</Value>

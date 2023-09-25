@@ -1,25 +1,21 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Grand.Business.Catalog.Services.Products;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Grand.Infrastructure;
-using Moq;
-using MediatR;
-using Grand.Business.Core.Interfaces.Common.Security;
-using Grand.SharedKernel.Extensions;
+﻿using Grand.Business.Catalog.Services.Products;
 using Grand.Business.Common.Services.Security;
-using Grand.Domain.Customers;
-using Grand.Business.Core.Interfaces.Catalog.Products;
-using Grand.Business.Core.Interfaces.Common.Localization;
-using Grand.Business.Core.Interfaces.Catalog.Tax;
 using Grand.Business.Core.Interfaces.Catalog.Prices;
+using Grand.Business.Core.Interfaces.Catalog.Products;
+using Grand.Business.Core.Interfaces.Catalog.Tax;
+using Grand.Business.Core.Interfaces.Common.Localization;
+using Grand.Business.Core.Interfaces.Common.Security;
 using Grand.Domain.Catalog;
 using Grand.Domain.Common;
+using Grand.Domain.Customers;
+using Grand.Infrastructure;
+using Grand.Infrastructure.Configuration;
+using Grand.SharedKernel.Extensions;
+using MediatR;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
-namespace Grand.Business.Catalog.Services.Products.Tests
+namespace Grand.Business.Catalog.Tests.Services.Products
 {
     [TestClass()]
     public class ProductAttributeFormatterTests
@@ -52,10 +48,9 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             _pricingServiceMock = new Mock<IPricingService>();
             _productServiceMock = new Mock<IProductService>();
             _mediatorMock = new Mock<IMediator>();
-            _aclServiceMock = new AclService();
+            _aclServiceMock = new AclService(new AccessControlConfig());
             _productAttributeFormatter = new ProductAttributeFormatter(_workContextMock.Object, _productAttributeServiceMock.Object,
-                _translationServiceMock.Object, _taxServiceMock.Object, _priceFormatterMock.Object, _pricingServiceMock.Object,
-                _productServiceMock.Object);
+                _taxServiceMock.Object, _priceFormatterMock.Object, _pricingServiceMock.Object, _productServiceMock.Object);
         }
 
         [TestMethod()]
@@ -67,6 +62,7 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             var result = await _productAttributeFormatter.FormatAttributes(product, new List<CustomAttribute>());
             //Assert
             Assert.AreEqual("", result);
+            
         }
         [TestMethod()]
         public async Task FormatAttributesTest_GiftVoucher()
@@ -80,10 +76,10 @@ namespace Grand.Business.Catalog.Services.Products.Tests
                     new CustomAttribute() { Key = "RecipientEmail", Value =  "John@john.com" },
                     new CustomAttribute() { Key = "SenderName", Value =  "Will" },
                     new CustomAttribute() { Key = "SenderEmail", Value =  "Will@will.com" },
-                    new CustomAttribute() { Key = "Message", Value =  "" },
+                    new CustomAttribute() { Key = "Message", Value =  "" }
             });
             //Assert
-            Assert.AreEqual("Name Will, Email Will@will.com<br />RecName John, RecEmail John@john.com", result);
+            Assert.AreEqual("Will &lt;Will@will.com&gt;<br />John &lt;John@john.com&gt;", result);
         }
         [TestMethod()]
         public async Task FormatAttributesTest_CustomAttribute()
@@ -96,7 +92,7 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             //Act
             var result = await _productAttributeFormatter.FormatAttributes(product, new List<CustomAttribute>()
             {
-                    new CustomAttribute() { Key = "1", Value =  "1" },
+                    new CustomAttribute() { Key = "1", Value =  "1" }
             });
             //Assert
             Assert.AreEqual("test: aa", result);

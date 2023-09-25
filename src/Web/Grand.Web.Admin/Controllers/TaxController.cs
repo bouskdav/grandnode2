@@ -1,6 +1,5 @@
 ﻿using Grand.Business.Core.Interfaces.Catalog.Tax;
 using Grand.Business.Core.Interfaces.Common.Configuration;
-using Grand.Business.Core.Interfaces.Common.Stores;
 using Grand.Business.Core.Utilities.Common.Security;
 using Grand.Web.Common.DataSource;
 using Grand.Web.Common.Extensions;
@@ -9,7 +8,6 @@ using Grand.Domain.Tax;
 using Grand.Infrastructure;
 using Grand.Infrastructure.Caching;
 using Grand.Infrastructure.Plugins;
-using Grand.Web.Admin.Extensions;
 using Grand.Web.Admin.Models.Tax;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -18,16 +16,17 @@ using Grand.Business.Core.Interfaces.Common.Directory;
 using Grand.Web.Admin.Models.Common;
 using Grand.Domain.Directory;
 using Grand.Business.Core.Interfaces.Common.Logging;
+using Grand.Web.Admin.Extensions.Mapping;
+using Grand.Web.Admin.Extensions.Mapping.Settings;
 
 namespace Grand.Web.Admin.Controllers
 {
     [PermissionAuthorize(PermissionSystemName.TaxSettings)]
-    public partial class TaxController : BaseAdminController
+    public class TaxController : BaseAdminController
     {
         #region Fields
 
         private readonly ITaxService _taxService;
-        private readonly IStoreService _storeService;
         private readonly IWorkContext _workContext;
         private readonly ITaxCategoryService _taxCategoryService;
         private readonly ISettingService _settingService;
@@ -41,7 +40,6 @@ namespace Grand.Web.Admin.Controllers
         #region Constructors
 
         public TaxController(ITaxService taxService,
-            IStoreService storeService,
             IWorkContext workContext,
             ITaxCategoryService taxCategoryService,
             ISettingService settingService, 
@@ -51,7 +49,6 @@ namespace Grand.Web.Admin.Controllers
             ICountryService countryService)
         {
             _taxService = taxService;
-            _storeService = storeService;
             _workContext = workContext;
             _taxCategoryService = taxCategoryService;
             _settingService = settingService;
@@ -75,7 +72,7 @@ namespace Grand.Web.Admin.Controllers
         public async Task<IActionResult> Providers(DataSourceRequest command)
         {
             var storeScope = await GetActiveStore();
-            var taxSettings = _settingService.LoadSetting<TaxSettings>(storeScope);
+            _settingService.LoadSetting<TaxSettings>(storeScope);
             var taxProviderSettings = _settingService.LoadSetting<TaxProviderSettings>();
 
             var taxProviders = _taxService.LoadAllTaxProviders()
@@ -96,7 +93,7 @@ namespace Grand.Web.Admin.Controllers
             var gridModel = new DataSourceResult
             {
                 Data = taxProvidersModel,
-                Total = taxProvidersModel.Count()
+                Total = taxProvidersModel.Count
             };
 
             return Json(gridModel);
@@ -106,7 +103,7 @@ namespace Grand.Web.Admin.Controllers
         {
             var taxProviderettings = _settingService.LoadSetting<TaxProviderSettings>();
 
-            if (String.IsNullOrEmpty(systemName))
+            if (string.IsNullOrEmpty(systemName))
             {
                 return RedirectToAction("Providers");
             }
@@ -143,12 +140,12 @@ namespace Grand.Web.Admin.Controllers
             var taxCategories = await _taxCategoryService.GetAllTaxCategories();
             model.TaxCategories.Add(new SelectListItem { Text = _translationService.GetResource("Admin.Configuration.Tax.Settings.TaxCategories.None"), Value = "" });
             foreach (var tc in taxCategories)
-                model.TaxCategories.Add(new SelectListItem { Text = tc.Name, Value = tc.Id.ToString()});
+                model.TaxCategories.Add(new SelectListItem { Text = tc.Name, Value = tc.Id});
 
             //EU VAT countries
             model.EuVatShopCountries.Add(new SelectListItem { Text = _translationService.GetResource("Admin.Address.SelectCountry"), Value = "" });
             foreach (var c in await _countryService.GetAllCountries(showHidden: true))
-                model.EuVatShopCountries.Add(new SelectListItem { Text = c.Name, Value = c.Id.ToString(), Selected = c.Id == taxSettings.EuVatShopCountryId });
+                model.EuVatShopCountries.Add(new SelectListItem { Text = c.Name, Value = c.Id, Selected = c.Id == taxSettings.EuVatShopCountryId });
 
             //default tax address
             var defaultAddress = taxSettings.DefaultTaxAddress;
@@ -159,13 +156,13 @@ namespace Grand.Web.Admin.Controllers
 
             model.DefaultTaxAddress.AvailableCountries.Add(new SelectListItem { Text = _translationService.GetResource("Admin.Address.SelectCountry"), Value = "" });
             foreach (var c in await _countryService.GetAllCountries(showHidden: true))
-                model.DefaultTaxAddress.AvailableCountries.Add(new SelectListItem { Text = c.Name, Value = c.Id.ToString(), Selected = (defaultAddress != null && c.Id == defaultAddress.CountryId) });
+                model.DefaultTaxAddress.AvailableCountries.Add(new SelectListItem { Text = c.Name, Value = c.Id, Selected = defaultAddress != null && c.Id == defaultAddress.CountryId });
 
-            var states = defaultAddress != null && !String.IsNullOrEmpty(defaultAddress.CountryId) ? (await _countryService.GetCountryById(defaultAddress.CountryId))?.StateProvinces : new List<StateProvince>();
+            var states = defaultAddress != null && !string.IsNullOrEmpty(defaultAddress.CountryId) ? (await _countryService.GetCountryById(defaultAddress.CountryId))?.StateProvinces : new List<StateProvince>();
             if (states.Count > 0)
             {
                 foreach (var s in states)
-                    model.DefaultTaxAddress.AvailableStates.Add(new SelectListItem { Text = s.Name, Value = s.Id.ToString(), Selected = (s.Id == defaultAddress.StateProvinceId) });
+                    model.DefaultTaxAddress.AvailableStates.Add(new SelectListItem { Text = s.Name, Value = s.Id, Selected = s.Id == defaultAddress.StateProvinceId });
             }
 
             model.DefaultTaxAddress.CountryEnabled = true;

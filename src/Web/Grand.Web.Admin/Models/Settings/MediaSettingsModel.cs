@@ -3,7 +3,7 @@ using Grand.Infrastructure.Models;
 
 namespace Grand.Web.Admin.Models.Settings
 {
-    public partial class MediaSettingsModel : BaseModel
+    public class MediaSettingsModel : BaseModel
     {
         #region Standard Media Settings
         public string ActiveStore { get; set; }
@@ -82,10 +82,7 @@ namespace Grand.Web.Admin.Models.Settings
 
         [GrandResourceDisplayName("Admin.Settings.Media.FileManagerDisabledUICommands")]
         public string FileManagerDisabledUICommands { get; set; }
-
-        [GrandResourceDisplayName("Admin.Settings.Media.StoreLocation")]
-        public string StoreLocation { get; set; }
-
+        
         [GrandResourceDisplayName("Admin.Settings.Media.DefaultImageName")]
         public string DefaultImageName { get; set; } = "no-image.png";
 

@@ -12,13 +12,11 @@ using Grand.Infrastructure;
 using Grand.Infrastructure.Caching;
 using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Roslyn;
-using Grand.SharedKernel.Extensions;
 using Grand.Web.Admin.Extensions;
 using Grand.Web.Admin.Models.Common;
 using Grand.Web.Common.DataSource;
 using Grand.Web.Common.Security.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using System.Runtime.InteropServices;
@@ -26,7 +24,7 @@ using System.Runtime.InteropServices;
 namespace Grand.Web.Admin.Controllers
 {
     [PermissionAuthorize(PermissionSystemName.System)]
-    public partial class SystemController : BaseAdminController
+    public class SystemController : BaseAdminController
     {
         #region Fields
 
@@ -45,6 +43,8 @@ namespace Grand.Web.Admin.Controllers
         private readonly CurrencySettings _currencySettings;
         private readonly MeasureSettings _measureSettings;
         private readonly ExtensionsConfig _extConfig;
+        private readonly AccessControlConfig _accessControlConfig;
+        
         #endregion
 
         #region Constructors
@@ -62,7 +62,7 @@ namespace Grand.Web.Admin.Controllers
             ILogger logger,
             CurrencySettings currencySettings,
             MeasureSettings measureSettings,
-            ExtensionsConfig extConfig)
+            ExtensionsConfig extConfig, AccessControlConfig accessControlConfig)
         {
             _paymentService = paymentService;
             _shippingService = shippingService;
@@ -77,6 +77,7 @@ namespace Grand.Web.Admin.Controllers
             _webHostEnvironment = webHostEnvironment;
             _logger = logger;
             _extConfig = extConfig;
+            _accessControlConfig = accessControlConfig;
             _machineNameProvider = machineNameProvider;
         }
 
@@ -120,13 +121,13 @@ namespace Grand.Web.Admin.Controllers
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList().OrderBy(x => x.FullName))
             {
                 model.LoadedAssemblies.Add(new SystemInfoModel.LoadedAssembly {
-                    FullName = assembly.FullName,
+                    FullName = assembly.FullName
                 });
             }
 
             //current host
             var currenthostName = _workContext.CurrentHost.HostName;
-            if (!string.IsNullOrEmpty(currenthostName) && (currenthostName.Equals(HttpContext.Request.Host.Value, StringComparison.OrdinalIgnoreCase)))
+            if (!string.IsNullOrEmpty(currenthostName) && currenthostName.Equals(HttpContext.Request.Host.Value, StringComparison.OrdinalIgnoreCase))
                 model.SystemWarnings.Add(new SystemInfoModel.SystemWarningModel {
                     Level = SystemInfoModel.SystemWarningModel.SystemWarningLevel.Pass,
                     Text = _translationService.GetResource("Admin.System.Warnings.URL.Match")
@@ -144,7 +145,7 @@ namespace Grand.Web.Admin.Controllers
             {
                 model.SystemWarnings.Add(new SystemInfoModel.SystemWarningModel {
                     Level = SystemInfoModel.SystemWarningModel.SystemWarningLevel.Pass,
-                    Text = _translationService.GetResource("Admin.System.Warnings.ExchangeCurrency.Set"),
+                    Text = _translationService.GetResource("Admin.System.Warnings.ExchangeCurrency.Set")
                 });
                 if (perCurrency.Rate != 1)
                 {
@@ -168,7 +169,7 @@ namespace Grand.Web.Admin.Controllers
             {
                 model.SystemWarnings.Add(new SystemInfoModel.SystemWarningModel {
                     Level = SystemInfoModel.SystemWarningModel.SystemWarningLevel.Pass,
-                    Text = _translationService.GetResource("Admin.System.Warnings.PrimaryCurrency.Set"),
+                    Text = _translationService.GetResource("Admin.System.Warnings.PrimaryCurrency.Set")
                 });
             }
             else
@@ -186,7 +187,7 @@ namespace Grand.Web.Admin.Controllers
             {
                 model.SystemWarnings.Add(new SystemInfoModel.SystemWarningModel {
                     Level = SystemInfoModel.SystemWarningModel.SystemWarningLevel.Pass,
-                    Text = _translationService.GetResource("Admin.System.Warnings.DefaultWeight.Set"),
+                    Text = _translationService.GetResource("Admin.System.Warnings.DefaultWeight.Set")
                 });
 
                 if (bWeight.Ratio != 1)
@@ -212,7 +213,7 @@ namespace Grand.Web.Admin.Controllers
             {
                 model.SystemWarnings.Add(new SystemInfoModel.SystemWarningModel {
                     Level = SystemInfoModel.SystemWarningModel.SystemWarningLevel.Pass,
-                    Text = _translationService.GetResource("Admin.System.Warnings.DefaultDimension.Set"),
+                    Text = _translationService.GetResource("Admin.System.Warnings.DefaultDimension.Set")
                 });
 
                 if (bDimension.Ratio != 1)
@@ -257,14 +258,14 @@ namespace Grand.Web.Admin.Controllers
                 });
 
             //performance settings
-            if (CommonHelper.IgnoreStoreLimitations)
+            if (_accessControlConfig.IgnoreStoreLimitations)
             {
                 model.SystemWarnings.Add(new SystemInfoModel.SystemWarningModel {
                     Level = SystemInfoModel.SystemWarningModel.SystemWarningLevel.Warning,
                     Text = _translationService.GetResource("Admin.System.Warnings.Performance.IgnoreStoreLimitations")
                 });
             }
-            if (CommonHelper.IgnoreAcl)
+            if (_accessControlConfig.IgnoreAcl)
             {
                 model.SystemWarnings.Add(new SystemInfoModel.SystemWarningModel {
                     Level = SystemInfoModel.SystemWarningModel.SystemWarningLevel.Warning,
@@ -324,7 +325,7 @@ namespace Grand.Web.Admin.Controllers
                     return new
                     {
                         FileName = x.OriginalFile,
-                        IsCompiled = x.IsCompiled,
+                        x.IsCompiled,
                         Errors = string.Join(",", x.ErrorInfo)
                     };
                 }),

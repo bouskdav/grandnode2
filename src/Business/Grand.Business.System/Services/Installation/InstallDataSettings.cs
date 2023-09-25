@@ -1,7 +1,6 @@
 ﻿using Grand.Business.Core.Interfaces.Common.Configuration;
 using Grand.Business.Core.Interfaces.Storage;
-using Grand.Business.Core.Interfaces.System.Installation;
-using Grand.Domain.AdminSearch;
+using Grand.Domain.Admin;
 using Grand.Domain.Blogs;
 using Grand.Domain.Catalog;
 using Grand.Domain.Cms;
@@ -49,7 +48,7 @@ namespace Grand.Business.System.Services.Installation
             await _settingService.SaveSetting(new PdfSettings {
                 LogoPictureId = "",
                 InvoiceHeaderText = null,
-                InvoiceFooterText = null,
+                InvoiceFooterText = null
             });
 
             await _settingService.SaveSetting(new CommonSettings {
@@ -61,10 +60,10 @@ namespace Grand.Business.System.Services.Installation
                 SitemapIncludeProducts = false,
                 Log404Errors = true,
                 PopupForTermsOfServiceLinks = true,
-                AllowToSelectStore = false,
+                AllowToSelectStore = false
             });
             await _settingService.SaveSetting(new SystemSettings {
-                DeleteGuestTaskOlderThanMinutes = 1440,
+                DeleteGuestTaskOlderThanMinutes = 1440
             });
             await _settingService.SaveSetting(new SecuritySettings {
                 AdminAreaAllowedIpAddresses = null
@@ -90,7 +89,6 @@ namespace Grand.Business.System.Services.Installation
                 ImageQuality = 100,
                 DefaultPictureZoomEnabled = true,
                 AllowedFileTypes = ".gif, .jpg, .jpeg, .png, .bmp, .webp",
-                StoreLocation = "/",
             });
 
             await _settingService.SaveSetting(new StorageSettings {
@@ -162,14 +160,14 @@ namespace Grand.Business.System.Services.Installation
                         "null",
                         "prn",
                         "aux"
-                    },
+                    }
             });
 
             await _settingService.SaveSetting(new AdminAreaSettings {
                 DefaultGridPageSize = 15,
                 GridPageSizes = "10, 15, 20, 50, 100",
                 UseIsoDateTimeConverterInJson = true,
-                HideStoreColumn = true,
+                HideStoreColumn = true
             });
 
             await _settingService.SaveSetting(new CatalogSettings {
@@ -193,6 +191,7 @@ namespace Grand.Business.System.Services.Installation
                 ProductReviewsMustBeApproved = false,
                 DefaultProductRatingValue = 5,
                 AllowAnonymousUsersToReviewProduct = false,
+                FilterProductRating = "4.6,4.7,4.8,4.9,5",
                 ProductReviewPossibleOnlyAfterPurchasing = false,
                 ProductReviewPossibleOnlyOnce = false,
                 NotifyStoreOwnerAboutNewProductReviews = false,
@@ -249,7 +248,7 @@ namespace Grand.Business.System.Services.Installation
             await _settingService.SaveSetting(new LanguageSettings {
                 DefaultAdminLanguageId = _languageRepository.Table.Single(l => l.Name == "English").Id,
                 AutomaticallyDetectLanguage = false,
-                IgnoreRtlPropertyForAdminArea = false,
+                IgnoreRtlPropertyForAdminArea = false
             });
 
             await _settingService.SaveSetting(new CustomerSettings {
@@ -303,7 +302,7 @@ namespace Grand.Business.System.Services.Installation
                 SaveVisitedPage = false,
                 AllowUsersToDeleteAccount = false,
                 AllowUsersToExportData = false,
-                TwoFactorAuthenticationEnabled = false,
+                TwoFactorAuthenticationEnabled = false
             });
 
             await _settingService.SaveSetting(new AddressSettings {
@@ -321,7 +320,7 @@ namespace Grand.Business.System.Services.Installation
                 PhoneEnabled = true,
                 PhoneRequired = true,
                 FaxEnabled = false,
-                NoteEnabled = false,
+                NoteEnabled = false
             });
 
             await _settingService.SaveSetting(new StoreInformationSettings {
@@ -336,7 +335,7 @@ namespace Grand.Business.System.Services.Installation
                 InstagramLink = "https://www.instagram.com/grandnode/",
                 LinkedInLink = "https://www.linkedin.com/company/grandnode.com/",
                 PinterestLink = "",
-                VoiceNavigation = false,
+                VoiceNavigation = false
             });
 
             await _settingService.SaveSetting(new LoyaltyPointsSettings {
@@ -348,7 +347,7 @@ namespace Grand.Business.System.Services.Installation
                 PointsForPurchases_Awarded = (int)OrderStatusSystem.Complete,
                 ReduceLoyaltyPointsAfterCancelOrder = true,
                 DisplayHowMuchWillBeEarned = true,
-                PointsAccumulatedForAllStores = true,
+                PointsAccumulatedForAllStores = true
             });
 
             await _settingService.SaveSetting(new CurrencySettings {
@@ -360,7 +359,7 @@ namespace Grand.Business.System.Services.Installation
 
             await _settingService.SaveSetting(new MeasureSettings {
                 BaseDimensionId = _measureDimensionRepository.Table.Single(m => m.SystemKeyword == "centimetres").Id,
-                BaseWeightId = _measureWeightRepository.Table.Single(m => m.SystemKeyword == "lb").Id,
+                BaseWeightId = _measureWeightRepository.Table.Single(m => m.SystemKeyword == "lb").Id
             });
 
             await _settingService.SaveSetting(new ShoppingCartSettings {
@@ -383,7 +382,7 @@ namespace Grand.Business.System.Services.Installation
                 RoundPrices = true,
                 GroupTierPrices = false,
                 AllowCartItemEditing = true,
-                AllowOnHoldCart = true,
+                AllowOnHoldCart = true
             });
 
             await _settingService.SaveSetting(new OrderSettings {
@@ -421,11 +420,11 @@ namespace Grand.Business.System.Services.Installation
                 EstimateShippingEnabled = false,
                 DisplayShipmentEventsToCustomers = false,
                 DisplayShipmentEventsToStoreOwner = false,
-                SkipShippingMethodSelectionIfOnlyOne = false,
+                SkipShippingMethodSelectionIfOnlyOne = false
             });
 
             await _settingService.SaveSetting(new ShippingProviderSettings {
-                ActiveSystemNames = new List<string> { "Shipping.FixedRate" },
+                ActiveSystemNames = new List<string> { "Shipping.FixedRate" }
             });
 
             await _settingService.SaveSetting(new PaymentSettings {
@@ -433,18 +432,17 @@ namespace Grand.Business.System.Services.Installation
                     {
                         "Payments.CashOnDelivery",
                         "Payments.PayPalStandard",
-                        "Payments.BrainTree",
+                        "Payments.BrainTree"
                     },
                 AllowRePostingPayments = true,
                 SkipPaymentIfOnlyOne = true,
                 ShowPaymentDescriptions = true,
-                SkipPaymentInfo = false,
+                SkipPaymentInfo = false
             });
 
             await _settingService.SaveSetting(new TaxSettings {
                 TaxBasedOn = TaxBasedOn.BillingAddress,
                 TaxDisplayType = TaxDisplayType.ExcludingTax,
-                DisplayTaxSuffix = false,
                 DisplayTaxRates = false,
                 PricesIncludeTax = false,
                 CalculateRoundPrice = 2,
@@ -468,11 +466,11 @@ namespace Grand.Business.System.Services.Installation
             });
 
             await _settingService.SaveSetting(new TaxProviderSettings {
-                ActiveTaxProviderSystemName = "Tax.FixedRate",
+                ActiveTaxProviderSystemName = "Tax.FixedRate"
             });
 
             await _settingService.SaveSetting(new DateTimeSettings {
-                DefaultStoreTimeZoneId = "",
+                DefaultStoreTimeZoneId = ""
             });
 
             await _settingService.SaveSetting(new BlogSettings {
@@ -522,7 +520,7 @@ namespace Grand.Business.System.Services.Installation
                 BrandSizeLimit = 100,
                 CollectionSizeLimit = 100,
                 VendorSizeLimit = 100,
-                CustomerGroupSizeLimit = 100,
+                CustomerGroupSizeLimit = 100
             });
 
             await _settingService.SaveSetting(new NewsSettings {
@@ -545,7 +543,7 @@ namespace Grand.Business.System.Services.Installation
                 NumberOfReview = 10,
                 VendorReviewsMustBeApproved = true,
                 VendorReviewPossibleOnlyAfterPurchasing = true,
-                NotifyVendorAboutNewVendorReviews = true,
+                NotifyVendorAboutNewVendorReviews = true
             });
 
             var eaGeneral = _emailAccountRepository.Table.FirstOrDefault();
@@ -556,13 +554,7 @@ namespace Grand.Business.System.Services.Installation
             });
 
             await _settingService.SaveSetting(new WidgetSettings {
-                ActiveWidgetSystemNames = new List<string> { "Widgets.Slider" },
-            });
-
-            await _settingService.SaveSetting(new GoogleAnalyticsSettings() {
-                gaprivateKey = "",
-                gaserviceAccountEmail = "",
-                gaviewID = ""
+                ActiveWidgetSystemNames = new List<string> { "Widgets.Slider" }
             });
         }
     }

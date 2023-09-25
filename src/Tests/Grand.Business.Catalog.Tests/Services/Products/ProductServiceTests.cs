@@ -1,4 +1,5 @@
-﻿using Grand.Business.Common.Services.Security;
+﻿using Grand.Business.Catalog.Services.Products;
+using Grand.Business.Common.Services.Security;
 using Grand.Business.Core.Interfaces.Common.Security;
 using Grand.Business.Core.Queries.Catalog;
 using Grand.Data.Tests.MongoDb;
@@ -8,13 +9,14 @@ using Grand.Domain.Data;
 using Grand.Domain.Orders;
 using Grand.Infrastructure;
 using Grand.Infrastructure.Caching;
+using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Tests.Caching;
 using Grand.SharedKernel.Extensions;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Grand.Business.Catalog.Services.Products.Tests
+namespace Grand.Business.Catalog.Tests.Services.Products
 {
     [TestClass()]
     public class ProductServiceTests
@@ -40,8 +42,8 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             _mediatorMock.Setup(x => x.Send(It.IsAny<GetProductArchByIdQuery>(), default))
                 .Returns(Task.FromResult(new Product()));
 
-            _aclServiceMock = new AclService();
-            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object);
+            _aclServiceMock = new AclService(new AccessControlConfig());
+            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object, new CacheConfig(){ DefaultCacheTimeMinutes = 1});
             _productService = new ProductService(_cacheBase, _productRepository, _workContextMock.Object, _mediatorMock.Object, _aclServiceMock);
         }
 
@@ -52,9 +54,9 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             await _productRepository.InsertAsync(new Product() { Published = true, VisibleIndividually = true, BestSeller = true });
             await _productRepository.InsertAsync(new Product() { Published = true, VisibleIndividually = true, BestSeller = true });
             await _productRepository.InsertAsync(new Product() { Published = true, VisibleIndividually = true });
-            await _productRepository.InsertAsync(new Product() { Published = true, VisibleIndividually = true, });
-            await _productRepository.InsertAsync(new Product() { Published = true, VisibleIndividually = true, });
-            await _productRepository.InsertAsync(new Product() { Published = true, VisibleIndividually = true, });
+            await _productRepository.InsertAsync(new Product() { Published = true, VisibleIndividually = true });
+            await _productRepository.InsertAsync(new Product() { Published = true, VisibleIndividually = true });
+            await _productRepository.InsertAsync(new Product() { Published = true, VisibleIndividually = true });
             await _productRepository.InsertAsync(new Product() { Published = true, VisibleIndividually = true, Sku = "test123" });
             await _productRepository.InsertAsync(new Product() { Published = true, VisibleIndividually = true, ParentGroupedProductId = "1" });
 
@@ -433,7 +435,7 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             await _productService.InsertProduct(product);
             //Act
             await _productService.InsertBundleProduct(new BundleProduct {
-                ProductId = "2",
+                ProductId = "2"
             }, product.Id);
 
             var result = await _productService.GetProductById(product.Id);
@@ -491,7 +493,7 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             //Act
             await _productService.InsertCrossSellProduct(new CrossSellProduct {
                 ProductId1 = product.Id,
-                ProductId2 = "2",
+                ProductId2 = "2"
             });
 
             var result = await _productService.GetProductById(product.Id);
@@ -509,7 +511,7 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             await _productService.InsertProduct(product);
             var crossSellProduct = new CrossSellProduct {
                 ProductId1 = product.Id,
-                ProductId2 = "2",
+                ProductId2 = "2"
             };
             await _productService.InsertCrossSellProduct(crossSellProduct);
 
@@ -536,12 +538,12 @@ namespace Grand.Business.Catalog.Services.Products.Tests
             //Act
             await _productService.InsertCrossSellProduct(new CrossSellProduct {
                 ProductId1 = product.Id,
-                ProductId2 = product2.Id,
+                ProductId2 = product2.Id
             });
             //Act
             await _productService.InsertCrossSellProduct(new CrossSellProduct {
                 ProductId1 = product.Id,
-                ProductId2 = product3.Id,
+                ProductId2 = product3.Id
             });
 
             var result = await _productService.GetCrossSellProductsByShoppingCart(new List<ShoppingCartItem> { new ShoppingCartItem() { ProductId = product.Id } }, 2);

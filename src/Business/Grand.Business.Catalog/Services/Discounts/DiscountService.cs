@@ -1,6 +1,5 @@
 ﻿using Grand.Business.Core.Interfaces.Catalog.Discounts;
 using Grand.Business.Core.Utilities.Catalog;
-using Grand.Business.Core.Interfaces.Common.Localization;
 using Grand.Domain;
 using Grand.Domain.Catalog;
 using Grand.Domain.Customers;
@@ -11,8 +10,8 @@ using Grand.Domain.Orders;
 using Grand.Infrastructure;
 using Grand.Infrastructure.Caching;
 using Grand.Infrastructure.Caching.Constants;
+using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Extensions;
-using Grand.SharedKernel.Extensions;
 using MediatR;
 
 namespace Grand.Business.Catalog.Services.Discounts
@@ -28,13 +27,13 @@ namespace Grand.Business.Catalog.Services.Discounts
         private readonly IRepository<Discount> _discountRepository;
         private readonly IRepository<DiscountCoupon> _discountCouponRepository;
         private readonly IRepository<DiscountUsageHistory> _discountUsageHistoryRepository;
-        private readonly ITranslationService _translationService;
         private readonly ICacheBase _cacheBase;
         private readonly IWorkContext _workContext;
         private readonly IEnumerable<IDiscountProvider> _discountProviders;
         private readonly IEnumerable<IDiscountAmountProvider> _discountAmountProviders;
         private readonly IMediator _mediator;
-
+        private readonly AccessControlConfig _accessControlConfig;
+        
         #endregion
 
         #region Ctor
@@ -46,21 +45,20 @@ namespace Grand.Business.Catalog.Services.Discounts
             IRepository<Discount> discountRepository,
             IRepository<DiscountCoupon> discountCouponRepository,
             IRepository<DiscountUsageHistory> discountUsageHistoryRepository,
-            ITranslationService translationService,
             IWorkContext workContext,
             IEnumerable<IDiscountProvider> discountProviders,
             IEnumerable<IDiscountAmountProvider> discountAmountProviders,
-            IMediator mediator)
+            IMediator mediator, AccessControlConfig accessControlConfig)
         {
             _cacheBase = cacheBase;
             _discountRepository = discountRepository;
             _discountCouponRepository = discountCouponRepository;
             _discountUsageHistoryRepository = discountUsageHistoryRepository;
-            _translationService = translationService;
             _workContext = workContext;
             _discountProviders = discountProviders;
             _discountAmountProviders = discountAmountProviders;
             _mediator = mediator;
+            _accessControlConfig = accessControlConfig;
         }
 
         #endregion
@@ -98,7 +96,7 @@ namespace Grand.Business.Catalog.Services.Discounts
                         && (!d.EndDateUtc.HasValue || d.EndDateUtc >= nowUtc)
                         && d.IsEnabled);
                 }
-                if (!string.IsNullOrEmpty(storeId) && !CommonHelper.IgnoreStoreLimitations)
+                if (!string.IsNullOrEmpty(storeId) && !_accessControlConfig.IgnoreStoreLimitations)
                 {
                     //Store acl
                     query = from p in query
@@ -176,7 +174,7 @@ namespace Grand.Business.Catalog.Services.Discounts
 
             var usageHistory = await GetAllDiscountUsageHistory(discount.Id);
             if (usageHistory.Count > 0)
-                throw new ArgumentNullException("Discount was used and have a history");
+                throw new ArgumentException("Discount was used and have a history");
 
             await _discountRepository.DeleteAsync(discount);
 
@@ -338,7 +336,7 @@ namespace Grand.Business.Catalog.Services.Discounts
                 }
                 else
                 {
-                    coupon.Qty = coupon.Qty - 1;
+                    coupon.Qty -= 1;
                     coupon.Used = coupon.Qty > 0;
                 }
                 await _discountCouponRepository.UpdateAsync(coupon);
@@ -422,7 +420,7 @@ namespace Grand.Business.Catalog.Services.Discounts
             //do not allow use discount in the current store
             if (discount.LimitedToStores && discount.Stores.All(x => _workContext.CurrentStore.Id != x))
             {
-                result.UserError = _translationService.GetResource("ShoppingCart.Discount.CannotBeUsedInStore");
+                result.UserErrorResource = "ShoppingCart.Discount.CannotBeUsedInStore";
                 return result;
             }
 
@@ -460,7 +458,7 @@ namespace Grand.Business.Catalog.Services.Discounts
                 var hasGiftVouchers = cart.Any(x => x.IsGiftVoucher);
                 if (hasGiftVouchers)
                 {
-                    result.UserError = _translationService.GetResource("ShoppingCart.Discount.CannotBeUsedWithGiftVouchers");
+                    result.UserErrorResource = "ShoppingCart.Discount.CannotBeUsedWithGiftVouchers";
                     return result;
                 }
             }
@@ -471,7 +469,7 @@ namespace Grand.Business.Catalog.Services.Discounts
                 DateTime startDate = DateTime.SpecifyKind(discount.StartDateUtc.Value, DateTimeKind.Utc);
                 if (startDate.CompareTo(now) > 0)
                 {
-                    result.UserError = _translationService.GetResource("ShoppingCart.Discount.NotStartedYet");
+                    result.UserErrorResource = "ShoppingCart.Discount.NotStartedYet";
                     return result;
                 }
             }
@@ -480,7 +478,7 @@ namespace Grand.Business.Catalog.Services.Discounts
                 DateTime endDate = DateTime.SpecifyKind(discount.EndDateUtc.Value, DateTimeKind.Utc);
                 if (endDate.CompareTo(now) < 0)
                 {
-                    result.UserError = _translationService.GetResource("ShoppingCart.Discount.Expired");
+                    result.UserErrorResource = "ShoppingCart.Discount.Expired";
                     return result;
                 }
             }
@@ -500,7 +498,7 @@ namespace Grand.Business.Catalog.Services.Discounts
                         var usedTimes = await GetAllDiscountUsageHistory(discount.Id, customer.Id, null, false, 0, 1);
                         if (usedTimes.TotalCount >= discount.LimitationTimes)
                         {
-                            result.UserError = _translationService.GetResource("ShoppingCart.Discount.CannotBeUsedAnymore");
+                            result.UserErrorResource = "ShoppingCart.Discount.CannotBeUsedAnymore";
                             return result;
                         }
                     }
@@ -534,7 +532,7 @@ namespace Grand.Business.Catalog.Services.Discounts
                 if (singleRequirementRule == null) return result;
                 var ruleResult = await singleRequirementRule.CheckRequirement(ruleRequest);
                 if (ruleResult.IsValid) continue;
-                result.UserError = ruleResult.UserError;
+                result.UserErrorResource = ruleResult.UserError;
 
                 return result;
             }

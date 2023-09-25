@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Grand.Business.Catalog.Services.Brands;
-using Grand.Business.Catalog.Services.ExportImport.Dto;
+using Grand.Business.Catalog.Services.ExportImport;
+using Grand.Business.Core.Dto;
 using Grand.Business.Core.Interfaces.Catalog.Brands;
 using Grand.Business.Core.Interfaces.Common.Localization;
 using Grand.Business.Core.Interfaces.Common.Seo;
@@ -12,15 +13,15 @@ using Grand.Domain.Data;
 using Grand.Domain.Localization;
 using Grand.Infrastructure;
 using Grand.Infrastructure.Caching;
+using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Mapper;
 using Grand.Infrastructure.Tests.Caching;
 using Grand.Infrastructure.TypeSearch;
-using Grand.Infrastructure.TypeSearchers;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Grand.Business.Catalog.Services.ExportImport.Tests
+namespace Grand.Business.Catalog.Tests.Services.ExportImport
 {
     [TestClass()]
     public class BrandImportDataObjectTests
@@ -54,8 +55,8 @@ namespace Grand.Business.Catalog.Services.ExportImport.Tests
             _workContextMock.Setup(c => c.CurrentCustomer).Returns(() => new Customer());
 
             _mediatorMock = new Mock<IMediator>();
-            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object);
-            _brandService = new BrandService(_cacheBase, _repository, _workContextMock.Object, _mediatorMock.Object);
+            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object, new CacheConfig(){ DefaultCacheTimeMinutes = 1});
+            _brandService = new BrandService(_cacheBase, _repository, _workContextMock.Object, _mediatorMock.Object, new AccessControlConfig());
 
             _brandImportDataObject = new BrandImportDataObject(_brandService, _pictureServiceMock.Object, _brandLayoutServiceMock.Object, _slugServiceMock.Object, _languageServiceMock.Object, new Domain.Seo.SeoSettings());
         }

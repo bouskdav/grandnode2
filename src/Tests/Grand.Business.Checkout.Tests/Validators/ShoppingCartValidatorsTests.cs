@@ -12,11 +12,6 @@ using Grand.Domain.Orders;
 using Grand.Domain.Permissions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Grand.Business.Checkout.Tests.Validators
 {
@@ -44,7 +39,7 @@ namespace Grand.Business.Checkout.Tests.Validators
             _productAttributeService = new Mock<IProductAttributeService>();
             _productReservationServiceMock = new Mock<IProductReservationService>();
             _permissionServiceMock = new Mock<IPermissionService>();
-            _stockQuantityService = new StockQuantityService(_translationServiceMock.Object);
+            _stockQuantityService = new StockQuantityService();
             _translationServiceMock.Setup(x => x.GetResource(It.IsAny<string>())).Returns("Name");
         }
 
@@ -485,7 +480,7 @@ namespace Grand.Business.Checkout.Tests.Validators
 
             var product = new Product() { 
                 Id = "1", 
-                Published = true,
+                Published = true
             };
             var customer = new Domain.Customers.Customer();
             //Act
@@ -508,7 +503,7 @@ namespace Grand.Business.Checkout.Tests.Validators
 
             var product = new Product() {
                 Id = "1",
-                Published = true,
+                Published = true
             };
             var customer = new Domain.Customers.Customer();
             //Act

@@ -1,5 +1,4 @@
-﻿using Grand.Business.Core.Interfaces.System.Installation;
-using Grand.Domain.Affiliates;
+﻿using Grand.Domain.Affiliates;
 using Grand.Domain.Common;
 
 namespace Grand.Business.System.Services.Installation
@@ -21,7 +20,7 @@ namespace Grand.Business.System.Services.Installation
                 PhoneNumber = "123456789",
                 StateProvinceId = country?.StateProvinces.FirstOrDefault(sp => sp.Name == "New York")?.Id,
                 CountryId = country.Id,
-                CreatedOnUtc = DateTime.UtcNow,
+                CreatedOnUtc = DateTime.UtcNow
             };
             var affilate = new Affiliate
             {

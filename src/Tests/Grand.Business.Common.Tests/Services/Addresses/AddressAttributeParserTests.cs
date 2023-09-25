@@ -20,13 +20,13 @@ namespace Grand.Business.Common.Tests.Services.Addresses
         {
             _atrService = new Mock<IAddressAttributeService>();
             _translationService = new Mock<ITranslationService>();
-            _parser = new AddressAttributeParser(_atrService.Object, _translationService.Object);
+            _parser = new AddressAttributeParser(_atrService.Object);
             customAtr = new List<CustomAttribute>()
             {
                 new CustomAttribute(){Key="key1",Value="value1" },
                 new CustomAttribute(){Key="key2",Value="value2" },
                 new CustomAttribute(){Key="key3",Value="value3" },
-                new CustomAttribute(){Key="key4",Value="value4" },
+                new CustomAttribute(){Key="key4",Value="value4" }
             };
         }
 

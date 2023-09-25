@@ -2,17 +2,16 @@
 using Grand.Business.Core.Utilities.Common.Security;
 using Grand.Business.Core.Interfaces.Customers;
 using Grand.Web.Common.DataSource;
-using Grand.Web.Common.Extensions;
 using Grand.Web.Common.Security.Authorization;
 using Grand.SharedKernel.Extensions;
-using Grand.Web.Admin.Extensions;
+using Grand.Web.Admin.Extensions.Mapping;
 using Grand.Web.Admin.Models.Customers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Grand.Web.Admin.Controllers
 {
     [PermissionAuthorize(PermissionSystemName.Maintenance)]
-    public partial class ApiUserController : BaseAdminController
+    public class ApiUserController : BaseAdminController
     {
         private readonly IUserApiService _userApiService;
         private readonly IEncryptionService _encryptionService;
@@ -47,10 +46,6 @@ namespace Grand.Web.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Update(UserApiModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return Json(new DataSourceResult { Errors = ModelState.SerializeErrors() });
-            }
             var userapi = await _userApiService.GetUserById(model.Id);
             if (userapi == null)
                 throw new ArgumentException("No user api found with the specified id");
@@ -71,15 +66,8 @@ namespace Grand.Web.Admin.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Insert(UserApiModel model)
+        public async Task<IActionResult> Insert(UserApiCreateModel model)
         {
-            if (string.IsNullOrEmpty(model.Password))
-                ModelState.AddModelError("", "Password is required");
-
-            if (!ModelState.IsValid)
-            {
-                return Json(new DataSourceResult { Errors = ModelState.SerializeErrors() });
-            }
             if (ModelState.IsValid)
             {
                 var userapi = model.ToEntity();

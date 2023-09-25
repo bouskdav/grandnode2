@@ -1,8 +1,5 @@
 ﻿@model string
-@using Grand.SharedKernel.Extensions
-@using Grand.Web.Common.Page
 @inject Grand.Business.Core.Interfaces.Storage.IDownloadService downloadService
-@inject IPageHeadBuilder pagebuilder
 @{
     <link rel="stylesheet" type="text/css" asp-src="@(Common.WwwRoot)/administration/fineuploader/fineuploader-4.2.2.min.css" />
     <script asp-location="Footer" asp-src="@(Common.WwwRoot)/administration/fineuploader/jquery.fineuploader-4.2.2.min.js"></script>
@@ -25,7 +22,7 @@
                 cache: false,
                 type: "POST",
                 url: "@(Url.Action("SaveDownloadUrl", "Download", new { area = Constants.AreaAdmin }))",
-                data: { "downloadUrl": downloadUrl },
+                data: { "downloadUrl": downloadUrl, DownloadType: '@ViewData["DownloadType"]', ReferenceId: '@ViewData["ReferenceId"]' },
                 success: function (data) {
                     if (data.success) {
                         $('#pnlDownloadURLResult@(randomNumber)').fadeIn("slow").delay(1000).fadeOut("slow");
@@ -72,7 +69,7 @@
                 <div class="col-md-6 col-sm-6">
                     <label class="mt-checkbox mt-checkbox-outline control control-checkbox control control-checkbox">
                         <input type="checkbox" class="check-box" name="cbUseDownloadURL@(randomNumber)" id="cbUseDownloadURL@(randomNumber)"
-                               @if (download != null && download.UseDownloadUrl) { <text> checked="checked" </text> } />
+                               @if (download is {UseDownloadUrl: true }) { <text> checked="checked" </text> } />
                         <div class="control__indicator"></div>
                     </label>
                 </div>
@@ -138,7 +135,11 @@
                         $(document).ready(function () {
                             $("#@clientId").fineUploader({
                                 request: {
-                                    endpoint: '@(Url.Action("AsyncUpload", "Download", new { area = Constants.AreaAdmin }))'
+                                    endpoint: '@(Url.Action("AsyncUpload", "Download", new { area = Constants.AreaAdmin }))',
+                                    params: {
+                                        DownloadType: '@ViewData["DownloadType"]',
+                                        ReferenceId: '@ViewData["ReferenceId"]'
+                                    }
                                 },
                                 template: "@(clientId)-qq-template",
                                 multiple: false

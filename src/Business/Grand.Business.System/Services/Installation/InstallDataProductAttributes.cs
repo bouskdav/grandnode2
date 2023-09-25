@@ -1,5 +1,4 @@
-﻿using Grand.Business.Core.Interfaces.System.Installation;
-using Grand.Domain.Catalog;
+﻿using Grand.Domain.Catalog;
 
 namespace Grand.Business.System.Services.Installation
 {
@@ -48,7 +47,7 @@ namespace Grand.Business.System.Services.Installation
                 {
                     Name = "Software",
                     SeName = "software"
-                },
+                }
             };
             await _productAttributeRepository.InsertAsync(productAttributes);
         }
