@@ -34,3 +34,6 @@
 [submodule "src/Plugins/DiscountRules.Pickup"]
 	path = src/Plugins/DiscountRules.Pickup
 	url = https://github.com/bouskdav/grandnode2_plugin_pickup_discount.git
+[submodule "src/Plugins/Payments.RedSysES"]
+	path = src/Plugins/Payments.RedSysES
+	url = https://github.com/bouskdav/grandnode2_plugin_redsys_gateway.git
